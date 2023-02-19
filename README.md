@@ -1,1 +1,1 @@
-# msc-dissertation
+# MSc Dissertation - Intrinsically motivated reinforcement learning
