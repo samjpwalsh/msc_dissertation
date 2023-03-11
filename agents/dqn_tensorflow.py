@@ -1,114 +1,90 @@
-import gymnasium as gym
-import math
 import random
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-from collections import namedtuple, deque
 import gymnasium as gym
-from itertools import count
-
-import tensorflow as tf
+import numpy as np
+from collections import deque
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D, BatchNormalization, Activation
+from keras.layers import Dense
 from keras.optimizers import Adam
 
-# Define Replay Memory Class
-class ReplayMemory(object):
-
-    def __init__(self, capacity):
-        self.memory = deque([], maxlen=capacity)
-
-    def push(self, *args):
-        self.memory.append(*args)
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
-
-    def __len__(self):
-        return len(self.memory)
-
-# Define Q network class
-
-class DQN:
-    def __init__(self, observation_size, action_size, gamma, epsilon, epsilon_decay, epsilon_min, batch_size):
-        self.observation_size = observation_size
-        self.action_size = action_size
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.epsilon_decay = epsilon_decay
-        self.epsilon_min = epsilon_min
-        self.batch_size = batch_size
-        self.nn = Sequential([
-            Dense(128, input_shape=self.observation_size, activation='relu'),
-            Dense(128, activation='relu'),
-            Dense(self.action_size, activation='softmax')])
-        self.nn.compile(loss='huber', optimizer=Adam(learning_rate=0.001), metrics=['accuracy'])
-        self.replay_memory = ReplayMemory(1000)
-
-    def select_action(self, state):
-        if np.random.uniform() < self.epsilon:
-            return env.action_space.sample()
-        else:
-            np.argmax(self.nn.predict(state))
-
-    def update_model(self):
-        if len(self.replay_memory) < self.batch_size:
-            return
-
-        memories = self.replay_memory.sample(self.batch_size)
-        for memory in memories:
-            s, a, r, s1, done = memory
-            if not done:
-                x = s1.shape
-                target = r + self.gamma * np.amax(self.nn.predict((s1,)))
-            else:
-                target = r
-
-            target_f = self.nn.predict((s,))
-            target_f[0][a] = target
-            self.nn.fit(s, target_f, epochs=1, verbose=0)
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-
-
-# Environment
-env = gym.make("CartPole-v1")
-
-# Hyperparameters
+ENV_NAME = "CartPole-v1"
 
 GAMMA = 0.95
-EPSILON = 1.0
-EPSILON_DECAY = 0.995
-EPSILON_MIN = 0.01
-BATCH_SIZE = 32
+LEARNING_RATE = 0.001
 
-# Train the model
-state_size = env.observation_space.shape[0]
-action_size = env.action_space.n
-dqn = DQN(state_size, action_size, GAMMA, EPSILON, EPSILON_DECAY, EPSILON_MIN, BATCH_SIZE)
-episodes = 1000
-reward_list = []
+MEMORY_SIZE = 1000000
+BATCH_SIZE = 20
 
-for episode in range(episodes):
-    state = env.reset()[0]
-    state = np.reshape(state, [1, state_size])
-    done = False
-    cumulative_reward = 0
-    if episode % 10 == 0:
-        env.render()
-    while not done:
-        action = dqn.select_action(state)
-        next_state, reward, done, _, _ = env.step(action)
-        next_state = np.reshape(next_state, [1, state_size])
-        dqn.replay_memory.push((state, action, reward, next_state, done))
-        state = next_state
-        cumulative_reward += reward
-        dqn.update_model()
-    reward_list.append(cumulative_reward)
+EXPLORATION_MAX = 1.0
+EXPLORATION_MIN = 0.01
+EXPLORATION_DECAY = 0.995
 
-reward_plot = plt.plot(x=[i for i in range(episodes)], y=reward_list)
-plt.show()
+
+class DQNSolver:
+
+    def __init__(self, observation_space, action_space):
+        self.exploration_rate = EXPLORATION_MAX
+
+        self.action_space = action_space
+        self.memory = deque(maxlen=MEMORY_SIZE)
+
+        self.model = Sequential()
+        self.model.add(Dense(24, input_shape=(observation_space,), activation="relu"))
+        self.model.add(Dense(24, activation="relu"))
+        self.model.add(Dense(self.action_space, activation="linear"))
+        self.model.compile(loss="mse", optimizer=Adam(lr=LEARNING_RATE))
+
+    def remember(self, state, action, reward, next_state, done):
+        self.memory.append((state, action, reward, next_state, done))
+
+    def act(self, state):
+        if np.random.rand() < self.exploration_rate:
+            return random.randrange(self.action_space)
+        q_values = self.model.predict(state)
+        return np.argmax(q_values[0])
+
+    def experience_replay(self):
+        if len(self.memory) < BATCH_SIZE:
+            return
+        batch = random.sample(self.memory, BATCH_SIZE)
+        for state, action, reward, state_next, terminal in batch:
+            q_update = reward
+            if not terminal:
+                q_update = (reward + GAMMA * np.amax(self.model.predict(state_next)[0]))
+            q_values = self.model.predict(state)
+            q_values[0][action] = q_update
+            self.model.fit(state, q_values, verbose=0)
+        self.exploration_rate *= EXPLORATION_DECAY
+        self.exploration_rate = max(EXPLORATION_MIN, self.exploration_rate)
+
+
+def cartpole():
+    env = gym.make(ENV_NAME)
+    observation_space = env.observation_space.shape[0]
+    action_space = env.action_space.n
+    dqn_solver = DQNSolver(observation_space, action_space)
+    run = 0
+    while True:
+        run += 1
+        state = env.reset()[0]
+        state = np.reshape(state, [1, observation_space])
+        step = 0
+        while True:
+            step += 1
+            #env.render()
+            action = dqn_solver.act(state)
+            state_next, reward, terminal, info, _ = env.step(action)
+            reward = reward if not terminal else -reward
+            state_next = np.reshape(state_next, [1, observation_space])
+            dqn_solver.remember(state, action, reward, state_next, terminal)
+            state = state_next
+            if terminal:
+                print("Run: " + str(run) + ", exploration: " + str(dqn_solver.exploration_rate) + ", score: " + str(step))
+                break
+            dqn_solver.experience_replay()
+
+
+if __name__ == "__main__":
+    cartpole()
 
 
 
