@@ -7,15 +7,15 @@ from keras.models import Sequential, clone_model
 from keras.layers import Dense
 from keras.optimizers import Adam
 
-EPISODES = 50
-BATCH_SIZE = 32
-MEMORY_SIZE = 100_000
+EPISODES = 250
+BATCH_SIZE = 20
+MEMORY_SIZE = 100000
 GAMMA = 0.95
 EPSILON = 1.0
-EPSILON_DECAY = 0.99
 MIN_EPSILON = 0.01
+EPSILON_DECAY = 0.99
 LEARNING_RATE = 0.001
-STEPS_TARGET_MODEL_UPDATE = 1000
+STEPS_TARGET_MODEL_UPDATE = 100
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -28,15 +28,15 @@ class DQNAgent:
 
     def build_model(self):
         model = Sequential()
-        model.add(Dense(64, input_dim=self.state_size, activation='relu'))
-        model.add(Dense(64, activation='relu'))
+        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss='huber', optimizer=Adam(lr=LEARNING_RATE))
+        model.compile(loss='mse', optimizer=Adam(lr=LEARNING_RATE))
         return model
 
     def build_target_model(self):
         target_model = clone_model(self.model)
-        target_model.compile(loss='huber', optimizer=Adam(lr=LEARNING_RATE))
+        target_model.compile(loss='mse', optimizer=Adam(lr=LEARNING_RATE))
         return target_model
 
     def remember(self, state, action, reward, next_state, done):
@@ -51,17 +51,27 @@ class DQNAgent:
     def update_model(self):
         if len(self.memory) < BATCH_SIZE:
             return
+
         batch = random.sample(self.memory, BATCH_SIZE)
-        for state, action, reward, next_state, done in batch:
-            if done:
-                target = reward
-            else:
-                target = reward + GAMMA * np.amax(self.target_model.predict(next_state, verbose=0)[0])
-            prediction = self.model.predict(state, verbose=0)
-            prediction[0][action] = target # ? investigate
-            self.model.fit(state, prediction, epochs=1, verbose=0)
-        if self.epsilon > MIN_EPSILON:
-            self.epsilon *= EPSILON_DECAY
+
+        states = np.array([item[0][0] for item in batch])
+        actions = np.array([item[1] for item in batch])
+        rewards = np.array([item[2] for item in batch])
+        next_states = np.array([item[3][0] for item in batch])
+        dones = np.array([item[4] for item in batch])
+
+        targets = rewards.copy()
+        not_done_mask = ~dones
+        next_state_predictions = self.target_model.predict(next_states, verbose=0)
+        Q_values_next = np.amax(next_state_predictions, axis=1)
+        targets[not_done_mask] += GAMMA * Q_values_next[not_done_mask]
+
+        predictions = self.model.predict(states, verbose=0)
+        predictions[range(len(actions)), actions] = targets
+
+        self.model.fit(states, predictions, epochs=1, verbose=0)
+        self.epsilon *= EPSILON_DECAY
+        self.epsilon = max(MIN_EPSILON, self.epsilon)
 
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
@@ -74,25 +84,25 @@ if __name__ == "__main__":
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size)
     reward_list = []
+    step_counter = 0
     for episode in range(EPISODES):
         state = env.reset()[0]
         state = np.reshape(state, [1, state_size])
         done = False
         episode_reward = 0
-        step_counter = 0
         while not done:
             action = agent.choose_action(state)
             next_state, reward, done, _, _ = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
             agent.remember(state, action, reward, next_state, done)
             agent.update_model()
-            if step_counter % STEPS_TARGET_MODEL_UPDATE == 0:
+            if step_counter % STEPS_TARGET_MODEL_UPDATE == 0 and step_counter != 0:
                 agent.update_target_model()
             episode_reward += reward
             state = next_state
             step_counter += 1
             if done:
-                print(f"episode: {episode+1}/{EPISODES}, score: {episode_reward}")
+                print(f"episode: {episode+1}/{EPISODES}, score: {episode_reward}, steps: {step_counter}")
                 reward_list.append(episode_reward)
     reward_plot = plt.plot([i+1 for i in range(EPISODES)], reward_list)
     plt.show()
