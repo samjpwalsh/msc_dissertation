@@ -2,14 +2,13 @@ import gymnasium as gym
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from collections import deque
 from keras.models import Sequential, clone_model
 from keras.layers import Dense
 from keras.optimizers import Adam
 
-EPISODES = 250
+EPISODES = 150
 BATCH_SIZE = 20
-MEMORY_SIZE = 100000
+MEMORY_SIZE = 10000
 GAMMA = 0.95
 EPSILON = 1.0
 MIN_EPSILON = 0.01
@@ -21,7 +20,8 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=MEMORY_SIZE)
+        self.memory = np.zeros(shape=MEMORY_SIZE, dtype=np.ndarray)
+        self.memory_index = 0
         self.epsilon = EPSILON
         self.model = self.build_model()
         self.target_model = self.build_target_model()
@@ -40,7 +40,8 @@ class DQNAgent:
         return target_model
 
     def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+        self.memory[self.memory_index] = (state, action, reward, next_state, done)
+        self.memory_index = (self.memory_index + 1) % MEMORY_SIZE
 
     def choose_action(self, state):
         if np.random.rand() <= self.epsilon:
@@ -49,10 +50,10 @@ class DQNAgent:
             return np.argmax(self.model.predict(state, verbose=0)[0])
 
     def update_model(self):
-        if len(self.memory) < BATCH_SIZE:
+        if self.memory_index < BATCH_SIZE:
             return
-
-        batch = random.sample(self.memory, BATCH_SIZE)
+        indices = np.random.choice(len(np.nonzero(self.memory)[0]), BATCH_SIZE, replace=False)
+        batch = self.memory[indices]
 
         states = np.array([item[0][0] for item in batch])
         actions = np.array([item[1] for item in batch])
@@ -104,5 +105,5 @@ if __name__ == "__main__":
             if done:
                 print(f"episode: {episode+1}/{EPISODES}, score: {episode_reward}, steps: {step_counter}")
                 reward_list.append(episode_reward)
-    reward_plot = plt.plot([i+1 for i in range(EPISODES)], reward_list)
-    plt.show()
+        reward_plot = plt.plot([i+1 for i in range(episode+1)], reward_list)
+        plt.show()
