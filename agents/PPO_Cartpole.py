@@ -117,7 +117,7 @@ def sample_action(observation):
     return logits, action
 
 
-# Train the policy by maxizing the PPO-Clip objective
+# Train the policy by maximizing the PPO-Clip objective
 @tf.function
 def train_policy(
     observation_buffer, action_buffer, logprobability_buffer, advantage_buffer
@@ -140,12 +140,7 @@ def train_policy(
     policy_grads = tape.gradient(policy_loss, actor.trainable_variables)
     policy_optimizer.apply_gradients(zip(policy_grads, actor.trainable_variables))
 
-    kl = tf.reduce_mean(
-        logprobability_buffer
-        - logprobabilities(actor(observation_buffer), action_buffer)
-    )
-    kl = tf.reduce_sum(kl)
-    return kl
+    return
 
 
 # Train the value function by regression on mean-squared error
@@ -175,7 +170,6 @@ target_kl = 0.01
 hidden_sizes = (64, 64)
 
 # True if you want to render the environment
-render = False
 
 """
 ## Initializations
@@ -215,6 +209,8 @@ for epoch in range(epochs):
     sum_return = 0
     sum_length = 0
     num_episodes = 0
+    #if epoch in [0, 14, 29]:
+        #env.render()
 
     # Iterate over the steps of each epoch
     for t in range(steps_per_epoch):
@@ -257,14 +253,9 @@ for epoch in range(epochs):
         logprobability_buffer,
     ) = buffer.get()
 
-    # Update the policy and implement early stopping using KL divergence
+    # Update the policy
     for _ in range(train_policy_iterations):
-        kl = train_policy(
-            observation_buffer, action_buffer, logprobability_buffer, advantage_buffer
-        )
-        if kl > 1.5 * target_kl:
-            # Early Stopping
-            break
+        train_policy(observation_buffer, action_buffer, logprobability_buffer, advantage_buffer)
 
     # Update the value function
     for _ in range(train_value_iterations):
