@@ -3,105 +3,7 @@ import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 import gymnasium as gym
-import scipy.signal
-
-"""
-## Functions and class
-"""
-
-def discounted_cumulative_sums(x, discount):
-    # Discounted cumulative sums of vectors for computing rewards-to-go and advantage estimates
-    return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
-
-
-class Buffer:
-    # Buffer for storing trajectories
-    def __init__(self, observation_dimensions, size, gamma=0.99, lam=0.95):
-        # Buffer initialization
-        self.observation_buffer = np.zeros(
-            (size, observation_dimensions), dtype=np.float32
-        )
-        self.action_buffer = np.zeros(size, dtype=np.int32)
-        self.extrinsic_advantage_buffer = np.zeros(size, dtype=np.float32)
-        self.intrinsic_advantage_buffer = np.zeros(size, dtype=np.float32)
-        self.total_advantage_buffer = np.zeros(size, dtype=np.float32)
-        self.extrinsic_reward_buffer = np.zeros(size, dtype=np.float32)
-        self.intrinsic_reward_buffer = np.zeros(size, dtype=np.float32)
-        self.total_reward_buffer = np.zeros(size, dtype=np.float32)
-        self.value_buffer = np.zeros(size, dtype=np.float32)
-        self.logprobability_buffer = np.zeros(size, dtype=np.float32)
-        self.gamma, self.lam = gamma, lam
-        self.pointer, self.trajectory_start_index = 0, 0
-
-    def store(self, observation, action, extrinsic_reward, intrinsic_reward, value, logprobability):
-        # Append one step of agent-environment interaction
-        self.observation_buffer[self.pointer] = observation
-        self.action_buffer[self.pointer] = action
-        self.extrinsic_reward_buffer[self.pointer] = extrinsic_reward
-        self.intrinsic_reward_buffer[self.pointer] = intrinsic_reward
-        self.value_buffer[self.pointer] = value
-        self.logprobability_buffer[self.pointer] = logprobability
-        self.pointer += 1
-
-    def finish_trajectory(self, last_value=0):
-        # Finish the trajectory by normalising intrinsic rewards, computing advantage estimates and rewards-to-go
-        path_slice = slice(self.trajectory_start_index, self.pointer)
-        extrinsic_rewards = np.append(self.extrinsic_reward_buffer[path_slice], last_value)
-        intrinsic_rewards = np.append(self.intrinsic_reward_buffer[path_slice], last_value)
-        values = np.append(self.value_buffer[path_slice], last_value)
-
-        # Extrinsic Rewards and Advantages
-        ex_deltas = extrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
-        self.extrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
-            ex_deltas, self.gamma * self.lam
-        )
-        self.extrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
-            extrinsic_rewards, self.gamma
-        )[:-1]
-
-        # Intrinsic Rewards and Advantages
-        ir_mean, ir_std = (np.mean(intrinsic_rewards), np.std(intrinsic_rewards))
-        intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
-        int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
-        self.intrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
-            int_deltas, self.gamma * self.lam
-        )
-        self.intrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
-            extrinsic_rewards, self.gamma
-        )[:-1]
-
-        # 1. Should intrinsic rewards be discounted in the same way extrinsic rewards are?
-        # 2. Should advantages be calculated for ex and int seperately, then added, or int rewards added to ex then advantages calculated.
-
-        # Overall Advantages
-
-        self.total_advantage_buffer[path_slice] = \
-            self.extrinsic_advantage_buffer[path_slice] + self.intrinsic_advantage_buffer[path_slice]
-
-        # Overall Rewards
-
-        self.total_reward_buffer[path_slice] = \
-            self.extrinsic_reward_buffer[path_slice] + self.intrinsic_reward_buffer[path_slice]
-
-        self.trajectory_start_index = self.pointer
-
-    def get(self):
-        # Get all data of the buffer, normalize the advantages and intrinsic rewards
-        self.pointer, self.trajectory_start_index = 0, 0
-        advantage_mean, advantage_std = (
-            np.mean(self.total_advantage_buffer),
-            np.std(self.total_advantage_buffer),
-        )
-        self.total_advantage_buffer = (self.total_advantage_buffer - advantage_mean) / advantage_std
-
-        return (
-            self.observation_buffer,
-            self.action_buffer,
-            self.total_advantage_buffer,
-            self.intrinsic_reward_buffer,
-            self.total_reward_buffer,
-            self.logprobability_buffer
-        )
+from buffer import RNDBuffer as Buffer
 
 
 def mlp(x, sizes, activation=tf.tanh, output_activation=None):
@@ -109,7 +11,6 @@ def mlp(x, sizes, activation=tf.tanh, output_activation=None):
     for size in sizes[:-1]:
         x = layers.Dense(units=size, activation=activation)(x)
     return layers.Dense(units=sizes[-1], activation=output_activation)(x)
-
 
 def logprobabilities(logits, a):
     # Compute the log-probabilities of taking actions a by using the logits (i.e. the output of the actor)
