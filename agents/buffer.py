@@ -1,4 +1,5 @@
 import numpy as np
+from utils import discounted_cumulative_sums
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
@@ -18,7 +19,7 @@ class DQNBuffer:
             (size, observation_dimensions), dtype=np.float32
         )
         self.reward_buffer = np.zeros(size, dtype=np.float32)
-        self.done_buffer = np.zeors(size, dtype=bool)
+        self.done_buffer = np.zeros(size, dtype=bool)
         self.pointer = 0
         self.batch_size = batch_size
 
@@ -184,7 +185,3 @@ class RNDBuffer:
             self.total_reward_buffer,
             self.logprobability_buffer
         )
-
-def discounted_cumulative_sums(x, discount):
-    # Discounted cumulative sums of vectors for computing rewards-to-go and advantage estimates
-    return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]

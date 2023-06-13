@@ -1,44 +1,9 @@
-"""
-## Introduction
-This code example solves the CartPole-v0 environment using a Proximal Policy Optimization (PPO) agent.
-
-### Proximal Policy Optimization
-PPO is a policy gradient method and can be used for environments with either discrete or continuous action spaces.
-It trains a stochastic policy in an on-policy way. Also, it utilizes the actor critic method. The actor maps the
-observation to an action and the critic gives an expectation of the rewards of the agent for the observation given.
-Firstly, it collects a set of trajectories for each epoch by sampling from the latest version of the stochastic policy.
-Then, the rewards-to-go and the advantage estimates are computed in order to update the policy and fit the value function.
-The policy is updated via a stochastic gradient ascent optimizer, while the value function is fitted via some gradient descent algorithm.
-This procedure is applied for many epochs until the environment is solved.
-
-### Note
-This code example uses Keras and Tensorflow v2. It is based on the PPO Original Paper,
-the OpenAI's Spinning Up docs for PPO, and the OpenAI's Spinning Up implementation of PPO using Tensorflow v1.
-[OpenAI Spinning Up Github - PPO](https://github.com/openai/spinningup/blob/master/spinup/algos/tf1/ppo/ppo.py)
-"""
-
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers
 import gymnasium as gym
 from buffer import PPOBuffer as Buffer
-
-
-def mlp(x, sizes, activation=tf.tanh, output_activation=None):
-    # Build a feedforward neural network
-    for size in sizes[:-1]:
-        x = layers.Dense(units=size, activation=activation)(x)
-    return layers.Dense(units=sizes[-1], activation=output_activation)(x)
-
-
-def logprobabilities(logits, a):
-    # Compute the log-probabilities of taking actions a by using the logits (i.e. the output of the actor)
-    logprobabilities_all = tf.nn.log_softmax(logits)
-    logprobability = tf.reduce_sum(
-        tf.one_hot(a, num_actions) * logprobabilities_all, axis=1
-    )
-    return logprobability
+from utils import mlp, logprobabilities
 
 
 # Sample action from actor
@@ -57,7 +22,7 @@ def train_policy(
 
     with tf.GradientTape() as tape:  # Record operations for automatic differentiation.
         ratio = tf.exp(
-            logprobabilities(actor(observation_buffer), action_buffer)
+            logprobabilities(actor(observation_buffer), action_buffer, num_actions)
             - logprobability_buffer
         )
         min_advantage = tf.where(
@@ -101,7 +66,6 @@ lam = 0.97
 target_kl = 0.01
 hidden_sizes = (64, 64)
 
-# True if you want to render the environment
 
 """
 ## Initializations
@@ -158,7 +122,7 @@ for epoch in range(epochs):
 
         # Get the value and log-probability of the action
         value_t = critic(observation)
-        logprobability_t = logprobabilities(logits, action)
+        logprobability_t = logprobabilities(logits, action, num_actions)
 
         # Store obs, act, rew, v_t, logp_pi_t
         buffer.store(observation, action, reward, value_t, logprobability_t)
