@@ -21,7 +21,9 @@ class DQNBuffer:
         self.reward_buffer = np.zeros(size, dtype=np.float32)
         self.done_buffer = np.zeros(size, dtype=bool)
         self.pointer = 0
+        self.size = size
         self.batch_size = batch_size
+        self.buffer_full = False
 
     def store(self, observation, action, next_observation, reward, done):
         self.observation_buffer[self.pointer] = observation
@@ -29,9 +31,21 @@ class DQNBuffer:
         self.next_observation_buffer[self.pointer] = next_observation
         self.reward_buffer[self.pointer] = reward
         self.done_buffer[self.pointer] = done
-        self.pointer += 1
+        if self.pointer == (self.size - 1):
+            self.buffer_full = True
+        self.pointer = (self.pointer + 1) % self.size
 
     def sample(self):
+        if self.buffer_full:
+            indices = np.random.choice(range(self.size), self.batch_size, replace=False)
+        else:
+            indices = np.random.choice(range(self.pointer + 1), self.batch_size, replace=False)
+        observations = self.observation_buffer[indices]
+        actions = self.action_buffer[indices]
+        rewards = self.reward_buffer[indices]
+        next_observations = self.next_observation_buffer[indices]
+        dones = self.done_buffer[indices]
+        return observations, actions, rewards, next_observations, dones
 
 
 
@@ -146,15 +160,11 @@ class RNDBuffer:
         ir_mean, ir_std = (np.mean(intrinsic_rewards), np.std(intrinsic_rewards))
         intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
         int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
-        self.intrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
-            int_deltas, self.gamma * self.lam
-        )
-        self.intrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
-            extrinsic_rewards, self.gamma
-        )[:-1]
+        self.intrinsic_advantage_buffer[path_slice] = int_deltas
 
-        # 1. Should intrinsic rewards be discounted in the same way extrinsic rewards are? - Try without discounting per chatGPT advice
-        # 2. Should advantages be calculated for ex and int seperately, then added, or int rewards added to ex then advantages calculated.
+        self.intrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
+            intrinsic_rewards, self.gamma
+        )[:-1]
 
         # Overall Advantages
 
