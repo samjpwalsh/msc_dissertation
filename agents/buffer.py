@@ -48,13 +48,9 @@ class DQNBuffer:
         return observations, actions, rewards, next_observations, dones
 
 
-
-
-
-
 class PPOBuffer:
 
-    def __init__(self, observation_dimensions, size, gamma=0.99, lam=0.95):
+    def __init__(self, observation_dimensions, size, gamma, lam):
         # Buffer initialization
         self.observation_buffer = np.zeros(
             (size, observation_dimensions), dtype=np.float32
