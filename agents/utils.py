@@ -6,7 +6,7 @@ def discounted_cumulative_sums(x, discount):
     # Discounted cumulative sums of vectors for computing rewards-to-go and advantage estimates
     return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
 
-def mlp(x, sizes, activation=tf.tanh, output_activation=None):
+def mlp(x, sizes, activation, output_activation=None):
     # Build a feedforward neural network
     for size in sizes[:-1]:
         x = layers.Dense(units=size, activation=activation)(x)
