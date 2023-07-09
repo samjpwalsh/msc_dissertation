@@ -1,7 +1,7 @@
 import numpy as np
 import gymnasium as gym
 from matplotlib import pyplot as plt
-from tensorflow import keras
+from tensorflow.keras import activations
 from agent import DQNAgent
 
 
@@ -19,7 +19,7 @@ EPSILON_DECAY = 0.99
 LEARNING_RATE = 0.001
 STEPS_TARGET_MODEL_UPDATE = 100
 HIDDEN_SIZES = (24, 24)
-INPUT_ACTIVATION = keras.activations.relu
+INPUT_ACTIVATION = activations.relu
 OUTPUT_ACTIVATION = None
 
 """

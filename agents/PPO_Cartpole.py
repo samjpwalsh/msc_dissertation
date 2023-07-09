@@ -1,5 +1,5 @@
 import numpy as np
-from tensorflow import keras
+from tensorflow.keras import activations
 import gymnasium as gym
 from utils import logprobabilities
 from agent import PPOAgent
@@ -19,7 +19,7 @@ TRAIN_ACTOR_ITERATIONS = 80
 TRAIN_CRITIC_ITERATIONS = 80
 LAM = 0.97
 HIDDEN_SIZES = (64, 64)
-INPUT_ACTIVATION = keras.activations.relu
+INPUT_ACTIVATION = activations.relu
 OUTPUT_ACTIVATION = None
 
 
