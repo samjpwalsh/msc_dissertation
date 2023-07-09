@@ -19,7 +19,7 @@ TRAIN_ACTOR_ITERATIONS = 80
 TRAIN_CRITIC_ITERATIONS = 80
 LAM = 0.97
 HIDDEN_SIZES = (64, 64)
-INPUT_ACTIVATION = keras.activations.tanh
+INPUT_ACTIVATION = keras.activations.relu
 OUTPUT_ACTIVATION = None
 
 
@@ -49,7 +49,7 @@ for epoch in range(EPOCHS):
     # Iterate over the steps of each epoch
     for t in range(STEPS_PER_EPOCH):
 
-        if len(observation) == 2: # fix this
+        if len(observation) == 2:  # fix this
             observation = observation[0]
         observation = np.reshape(observation, [1, env.observation_space.shape[0]])
         logits, action = agent.sample_action(observation)
