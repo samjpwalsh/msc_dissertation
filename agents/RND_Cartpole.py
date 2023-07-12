@@ -1,8 +1,8 @@
 import numpy as np
 from tensorflow.keras import activations
 import gymnasium as gym
-from utils import logprobabilities
-from agent import RNDAgent
+from msc_dissertation.agents.utils import logprobabilities
+from msc_dissertation.agents.agent import RNDAgent
 
 
 """

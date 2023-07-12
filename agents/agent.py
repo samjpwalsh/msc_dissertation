@@ -1,9 +1,18 @@
 import numpy as np
+import random
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import clone_model
-from buffer import DQNBuffer, PPOBuffer
-from utils import mlp, logprobabilities
+from msc_dissertation.agents.buffer import DQNBuffer, PPOBuffer
+from msc_dissertation.agents.utils import mlp, logprobabilities
+
+class RandomAgent:
+
+    def __init__(self, action_dimensions):
+        self.action_dimensions = action_dimensions
+
+    def sample_action(self, observation):
+        return random.randrange(self.action_dimensions)
 
 
 class DQNAgent:
