@@ -1,8 +1,8 @@
 import numpy as np
 import gymnasium as gym
 from matplotlib import pyplot as plt
-from tensorflow.keras import activations
-from msc_dissertation.agents.agent import DQNAgent
+from keras import activations
+from agent import DQNAgent
 
 
 """
