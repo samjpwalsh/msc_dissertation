@@ -1,6 +1,6 @@
 import scipy
 import tensorflow as tf
-from tensorflow.keras import layers
+from keras import layers
 
 def discounted_cumulative_sums(x, discount):
     # Discounted cumulative sums of vectors for computing rewards-to-go and advantage estimates

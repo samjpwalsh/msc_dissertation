@@ -1,12 +1,11 @@
 from __future__ import annotations
-import minigrid
 from minigrid.core.constants import COLOR_NAMES
 from minigrid.core.grid import Grid
 from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Door, Goal, Key, Wall
 from minigrid.manual_control import ManualControl
 from minigrid.minigrid_env import MiniGridEnv
-from msc_dissertation.agents.agent import RandomAgent
+from msc-dissertation.agents.agent import RandomAgent
 
 class SimpleEnv(MiniGridEnv):
     def __init__(

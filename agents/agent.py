@@ -3,11 +3,11 @@ import random
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import clone_model
-from msc_dissertation.agents.buffer import DQNBuffer, PPOBuffer
-from msc_dissertation.agents.utils import mlp, logprobabilities
+from buffer import DQNBuffer, PPOBuffer
+from utils import mlp, logprobabilities
+
 
 class RandomAgent:
-
     def __init__(self, action_dimensions):
         self.action_dimensions = action_dimensions
 
