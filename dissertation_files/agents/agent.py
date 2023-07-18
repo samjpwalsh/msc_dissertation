@@ -3,8 +3,8 @@ import random
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import clone_model
-from buffer import DQNBuffer, PPOBuffer
-from utils import mlp, logprobabilities
+from dissertation_files.agents.buffer import DQNBuffer, PPOBuffer
+from dissertation_files.agents.utils import mlp, logprobabilities
 
 
 class RandomAgent:

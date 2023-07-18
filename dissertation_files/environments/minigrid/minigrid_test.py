@@ -5,7 +5,7 @@ from minigrid.core.mission import MissionSpace
 from minigrid.core.world_object import Door, Goal, Key, Wall
 from minigrid.manual_control import ManualControl
 from minigrid.minigrid_env import MiniGridEnv
-from msc-dissertation.agents.agent import RandomAgent
+from dissertation_files.agents.agent import RandomAgent
 
 class SimpleEnv(MiniGridEnv):
     def __init__(

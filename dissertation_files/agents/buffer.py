@@ -1,5 +1,5 @@
 import numpy as np
-from utils import discounted_cumulative_sums
+from dissertation_files.agents.utils import discounted_cumulative_sums
 
 
 class DQNBuffer:
