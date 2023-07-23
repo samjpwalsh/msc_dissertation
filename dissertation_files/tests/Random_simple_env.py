@@ -8,6 +8,6 @@ observation = env.reset()[0]
 done = False
 while not done:
     action = agent.sample_action(observation)
-    next_observation, reward, done, _, _ = env.step(action)
+    next_observation, reward, done, truncated, _ = env.step(action)
     observation = next_observation
 print(reward)

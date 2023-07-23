@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 from matplotlib import pyplot as plt
 from keras import activations
-from agent import DQNAgent
+from dissertation_files.agents.agent import DQNAgent
 
 
 """
