@@ -18,7 +18,7 @@ MIN_EPSILON = 0.01
 EPSILON_DECAY = 0.99
 LEARNING_RATE = 0.001
 STEPS_TARGET_MODEL_UPDATE = 100
-HIDDEN_SIZES = (24, 24)
+HIDDEN_SIZES = (64, 64)
 INPUT_ACTIVATION = activations.relu
 OUTPUT_ACTIVATION = None
 
@@ -58,5 +58,5 @@ for episode in range(EPISODES):
         if done:
             print(f"episode: {episode+1}/{EPISODES}, score: {episode_reward}, steps: {step_counter}")
             reward_list.append(episode_reward)
-    reward_plot = plt.plot([i+1 for i in range(episode+1)], reward_list)
-    plt.show()
+reward_plot = plt.plot([i+1 for i in range(EPISODES)], reward_list)
+plt.show()
