@@ -3,6 +3,8 @@ from keras import activations
 import gymnasium as gym
 from dissertation_files.agents.utils import logprobabilities
 from dissertation_files.agents.agent import PPOAgent
+from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 
 
 """
@@ -27,8 +29,9 @@ OUTPUT_ACTIVATION = None
 ## Initializations
 """
 
-env = gym.make("CartPole-v1", render_mode=None)
-observation_dimensions = env.observation_space.shape[0]
+env = SimpleEnv(render_mode=None)
+env = FlatObsWrapper(env)
+observation_dimensions = len(env.reset()[0])
 action_dimensions = env.action_space.n
 
 agent = PPOAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HIDDEN_SIZES, INPUT_ACTIVATION,
@@ -51,7 +54,9 @@ for epoch in range(EPOCHS):
 
         observation = np.reshape(observation, [1, observation_dimensions])
         logits, action = agent.sample_action(observation)
-        observation_new, reward, done, _, _ = env.step(action[0].numpy())
+        observation_new, reward, done, truncated, _ = env.step(action[0].numpy())
+        if truncated:
+            done = True
         episode_return += reward
         episode_length += 1
 

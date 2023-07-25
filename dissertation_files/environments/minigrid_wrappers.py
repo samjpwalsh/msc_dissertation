@@ -7,13 +7,13 @@ from dissertation_files.agents.agent import RandomAgent
 
 
 class FlatObsWrapper(ObservationWrapper):
-    # Transforms the observation into only the image component scaled to the grid size. Still partially observable,
-    # direction component not included.
+    # Transforms the observation into only the image component scaled to the grid size, and removes the colour component.
+    # Still partially observable, direction component not included.
 
     def __init__(self, env):
         super().__init__(env)
 
-        self.flat_grid_size = self.env.width * self.env.height * 3
+        self.flat_grid_size = self.env.width * self.env.height * 2
 
         self.observation_space = spaces.Box(
             low=0,
@@ -24,9 +24,15 @@ class FlatObsWrapper(ObservationWrapper):
 
     def observation(self, obs):
         grid = obs["image"]
-
-        # Flatten the visible grid and concatenate with one-hot encoded direction
-        obs = grid.flatten()
+        new_grid = []
+        for i in grid:
+            new_row = []
+            for j in i:
+                new_j = [j[0], j[2]]
+                new_row.append(new_j)
+            new_grid.append(new_row)
+        new_grid = np.array(new_grid)
+        obs = new_grid.flatten()
 
         return obs
 

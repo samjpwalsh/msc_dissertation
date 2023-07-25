@@ -1,8 +1,8 @@
 import numpy as np
 from keras import activations
 import gymnasium as gym
-from utils import logprobabilities
-from agent import RNDAgent
+from dissertation_files.agents.utils import logprobabilities
+from dissertation_files.agents.agent import RNDAgent
 
 
 """
@@ -20,7 +20,7 @@ TRAIN_CRITIC_ITERATIONS = 80
 TRAIN_RND_ITERATIONS = 80
 LAM = 0.97
 HIDDEN_SIZES = (64, 64)
-INPUT_ACTIVATION = activations.tanh
+INPUT_ACTIVATION = activations.relu
 OUTPUT_ACTIVATION = None
 
 
@@ -51,9 +51,7 @@ for epoch in range(EPOCHS):
     # Iterate over the steps of each epoch
     for t in range(STEPS_PER_EPOCH):
 
-        if len(observation) == 2:  # fix this
-            observation = observation[0]
-        observation = np.reshape(observation, [1, env.observation_space.shape[0]])
+        observation = np.reshape(observation, [1, observation_dimensions])
         logits, action = agent.sample_action(observation)
         observation_new, extrinsic_reward, done, _, _ = env.step(action[0].numpy())
         intrinsic_reward = agent.calculate_intrinsic_reward(observation_new)
@@ -75,7 +73,7 @@ for epoch in range(EPOCHS):
             sum_return += episode_return
             sum_length += episode_length
             num_episodes += 1
-            observation, episode_return, episode_length = env.reset(), 0, 0
+            observation, episode_return, episode_length = env.reset()[0], 0, 0
 
     # Get values from the buffer
     (

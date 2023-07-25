@@ -63,7 +63,7 @@ class DQNAgent:
         with tf.GradientTape() as tape:
             q_values = self.model(observations)
             q_values_actions = tf.reduce_sum(q_values * tf.one_hot(actions, self.action_dimensions), axis=1)
-            loss = tf.reduce_mean(tf.square(targets - q_values_actions))
+            loss = tf.losses.huber(targets, q_values_actions) #tf.reduce_mean(tf.square(targets - q_values_actions))
 
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
@@ -217,6 +217,7 @@ class RNDAgent:
 
         return logits, action
 
+    @tf.function
     def calculate_intrinsic_reward(self, observation):
         prediction = self.rnd_predictor(observation)
         target = self.rnd_target(observation)
