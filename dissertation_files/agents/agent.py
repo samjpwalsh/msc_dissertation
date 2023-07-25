@@ -3,7 +3,7 @@ import random
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import clone_model
-from dissertation_files.agents.buffer import DQNBuffer, PPOBuffer
+from dissertation_files.agents.buffer import DQNBuffer, PPOBuffer, RNDBuffer
 from dissertation_files.agents.utils import mlp, logprobabilities
 
 
@@ -161,7 +161,7 @@ class RNDAgent:
         self.action_dimensions = action_dimensions
         self.memory_size = memory_size
         self.clip_ratio = clip_ratio
-        self.buffer = PPOBuffer(observation_dimensions, memory_size, gamma, lam)
+        self.buffer = RNDBuffer(observation_dimensions, memory_size, gamma, lam)
         self.actor, self.actor_optimiser = self.build_actor(
             hidden_sizes,
             input_activation,
@@ -201,11 +201,14 @@ class RNDAgent:
 
     def build_rnd_predictor_and_target(self, hidden_sizes, input_activation, output_activation, learning_rate):
         observation_input = keras.Input(shape=(self.observation_dimensions,), dtype=tf.float32)
-        logits = tf.squeeze(
+        predictor_logits = tf.squeeze(
             mlp(observation_input, list(hidden_sizes) + [1], input_activation, output_activation), axis=1
         )
-        rnd_predictor = keras.Model(inputs=observation_input, outputs=logits)
-        rnd_target = keras.Model(inputs=observation_input, outputs=logits)
+        target_logits = tf.squeeze(
+            mlp(observation_input, list(hidden_sizes) + [1], input_activation, output_activation), axis=1
+        )
+        rnd_predictor = keras.Model(inputs=observation_input, outputs=predictor_logits)
+        rnd_target = keras.Model(inputs=observation_input, outputs=target_logits)
         rnd_predictor_optimiser = keras.optimizers.Adam(learning_rate=learning_rate)
 
         return rnd_predictor, rnd_target, rnd_predictor_optimiser
@@ -217,12 +220,11 @@ class RNDAgent:
 
         return logits, action
 
-    @tf.function
     def calculate_intrinsic_reward(self, observation):
         prediction = self.rnd_predictor(observation)
         target = self.rnd_target(observation)
         error = np.square(target - prediction)
-        return error
+        return float(error)
 
     @tf.function
     def train_actor(

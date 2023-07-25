@@ -37,6 +37,7 @@ agent = RNDAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HID
                  CLIP_RATIO, GAMMA, LAM)
 
 observation, episode_return, episode_length = env.reset()[0], 0, 0
+observation = np.reshape(observation, [1, observation_dimensions])
 
 """
 ## Training
@@ -48,20 +49,18 @@ for epoch in range(EPOCHS):
     sum_length = 0
     num_episodes = 0
 
-    # Iterate over the steps of each epoch
     for t in range(STEPS_PER_EPOCH):
 
-        observation = np.reshape(observation, [1, observation_dimensions])
         logits, action = agent.sample_action(observation)
         observation_new, extrinsic_reward, done, _, _ = env.step(action[0].numpy())
+        observation_new = np.reshape(observation_new, [1, observation_dimensions])
         intrinsic_reward = agent.calculate_intrinsic_reward(observation_new)
         episode_return += extrinsic_reward
         episode_length += 1
 
         value_t = agent.critic(observation)
-        logprobability_t = logprobabilities(logits, action)
+        logprobability_t = logprobabilities(logits, action, action_dimensions)
 
-        # Store obs, act, rew, v_t, logp_pi_t
         agent.buffer.store(observation, action, extrinsic_reward, intrinsic_reward, value_t, logprobability_t)
 
         observation = observation_new
@@ -74,8 +73,8 @@ for epoch in range(EPOCHS):
             sum_length += episode_length
             num_episodes += 1
             observation, episode_return, episode_length = env.reset()[0], 0, 0
+            observation = np.reshape(observation, [1, observation_dimensions])
 
-    # Get values from the buffer
     (
         observation_buffer,
         action_buffer,
@@ -95,7 +94,6 @@ for epoch in range(EPOCHS):
     for _ in range(TRAIN_RND_ITERATIONS):
         agent.train_rnd_predictor(observation_buffer)
 
-    # Print mean return and length for each epoch
     print(
         f" Epoch: {epoch + 1}. Mean Return: {sum_return / num_episodes}. Mean Length: {sum_length / num_episodes}"
     )

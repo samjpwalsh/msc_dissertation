@@ -46,7 +46,6 @@ for epoch in range(EPOCHS):
     sum_length = 0
     num_episodes = 0
 
-    # Iterate over the steps of each epoch
     for t in range(STEPS_PER_EPOCH):
 
         observation = np.reshape(observation, [1, observation_dimensions])
