@@ -1,8 +1,8 @@
-import numpy as np
 from keras import activations
 import gymnasium as gym
-from dissertation_files.agents.utils import logprobabilities
+from matplotlib import pyplot as plt
 from dissertation_files.agents.agent import PPOAgent
+from dissertation_files.agents.training import ppo_training_loop
 
 
 """
@@ -24,7 +24,7 @@ OUTPUT_ACTIVATION = None
 
 
 """
-## Initializations
+## Run
 """
 
 env = gym.make("CartPole-v1", render_mode=None)
@@ -34,57 +34,9 @@ action_dimensions = env.action_space.n
 agent = PPOAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HIDDEN_SIZES, INPUT_ACTIVATION,
                  OUTPUT_ACTIVATION, ACTOR_LEARNING_RATE, CRITIC_LEARNING_RATE, CLIP_RATIO, GAMMA, LAM)
 
-observation, episode_return, episode_length = env.reset()[0], 0, 0
+episodes, reward_list = ppo_training_loop(EPOCHS, agent, env, observation_dimensions, action_dimensions,
+                                          STEPS_PER_EPOCH, TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS)
 
-"""
-## Training
-"""
-
-for epoch in range(EPOCHS):
-
-    sum_return = 0
-    sum_length = 0
-    num_episodes = 0
-
-    for t in range(STEPS_PER_EPOCH):
-
-        observation = np.reshape(observation, [1, observation_dimensions])
-        logits, action = agent.sample_action(observation)
-        observation_new, reward, done, _, _ = env.step(action[0].numpy())
-        episode_return += reward
-        episode_length += 1
-
-        value_t = agent.critic(observation)
-        logprobability_t = logprobabilities(logits, action, action_dimensions)
-
-        agent.buffer.store(observation, action, reward, value_t, logprobability_t)
-
-        observation = observation_new
-
-        terminal = done
-        if terminal or (t == STEPS_PER_EPOCH - 1):
-            last_value = 0 if done else agent.critic(observation.reshape(1, -1))
-            agent.buffer.finish_trajectory(last_value)
-            sum_return += episode_return
-            sum_length += episode_length
-            num_episodes += 1
-            observation, episode_return, episode_length = env.reset()[0], 0, 0
-
-    (
-        observation_buffer,
-        action_buffer,
-        advantage_buffer,
-        return_buffer,
-        logprobability_buffer,
-    ) = agent.buffer.get()
-
-    for _ in range(TRAIN_ACTOR_ITERATIONS):
-        agent.train_actor(observation_buffer, action_buffer, logprobability_buffer, advantage_buffer)
-
-    for _ in range(TRAIN_CRITIC_ITERATIONS):
-        agent.train_critic(observation_buffer, return_buffer)
-
-    print(
-        f" Epoch: {epoch + 1}. Mean Return: {sum_return / num_episodes}. Mean Length: {sum_length / num_episodes}"
-    )
+reward_plot = plt.plot([i+1 for i in range(episodes)], reward_list)
+plt.show()
 
