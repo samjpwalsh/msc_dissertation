@@ -132,7 +132,6 @@ class RNDBuffer:
         self.pointer += 1
 
     def finish_trajectory(self, last_value=0):
-        # Finish the trajectory by normalising intrinsic rewards, computing advantage estimates and rewards-to-go
         path_slice = slice(self.trajectory_start_index, self.pointer)
         extrinsic_rewards = np.append(self.extrinsic_reward_buffer[path_slice], last_value)
         intrinsic_rewards = np.append(self.intrinsic_reward_buffer[path_slice], last_value)
@@ -150,7 +149,8 @@ class RNDBuffer:
         # Intrinsic Rewards and Advantages
         ir_mean, ir_std = (np.mean(intrinsic_rewards), np.std(intrinsic_rewards))
         intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
-        int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
+        # int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
+        int_deltas = intrinsic_rewards[:-1] - intrinsic_rewards[1:]
         self.intrinsic_advantage_buffer[path_slice] = int_deltas
 
         self.intrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
@@ -183,6 +183,6 @@ class RNDBuffer:
             self.action_buffer,
             self.total_advantage_buffer,
             self.intrinsic_reward_buffer,
-            self.total_reward_buffer,
+            self.extrinsic_reward_buffer,
             self.logprobability_buffer
         )
