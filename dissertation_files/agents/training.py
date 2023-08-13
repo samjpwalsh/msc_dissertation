@@ -134,7 +134,6 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
 
         for _ in range(train_critic_iterations):
             agent.train_critic(observation_buffer, extrinsic_reward_buffer)
-            # should the critic be trained on the total reward in RND or just extrinsic/intrinsic - I think just extrinsic
 
         for _ in range(train_rnd_iterations):
             agent.train_rnd_predictor(observation_buffer)
