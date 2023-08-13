@@ -11,7 +11,7 @@ Hyperparameters
 """
 
 EPISODES = 500
-BATCH_SIZE = 50
+BATCH_SIZE = 500  # larger batch size better for sparse reward environment
 MEMORY_SIZE = 10000
 GAMMA = 0.95
 EPSILON = 1.0

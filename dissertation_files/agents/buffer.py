@@ -147,15 +147,13 @@ class RNDBuffer:
         )[:-1]
 
         # Intrinsic Rewards and Advantages
-        ir_mean, ir_std = (np.mean(intrinsic_rewards), np.std(intrinsic_rewards))
-        intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
-        # int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
+        # ir_mean, ir_std = (np.mean(intrinsic_rewards), np.std(intrinsic_rewards))
+        # ir_max, ir_min = (np.max(intrinsic_rewards), np.min(intrinsic_rewards))
+        # print(f"PreMax: {ir_max}, Min: {ir_min}, Mean: {ir_mean}, Std: {ir_std}")
+        # intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
         int_deltas = intrinsic_rewards[:-1] - intrinsic_rewards[1:]
         self.intrinsic_advantage_buffer[path_slice] = int_deltas
-
-        self.intrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
-            intrinsic_rewards, self.gamma
-        )[:-1]
+        self.intrinsic_reward_buffer[path_slice] = intrinsic_rewards[:-1]
 
         # Overall Advantages
 
@@ -170,7 +168,7 @@ class RNDBuffer:
         self.trajectory_start_index = self.pointer
 
     def get(self):
-        # Get all data of the buffer, normalize the advantages and intrinsic rewards
+        # Get all data of the buffer, normalize the advantages
         self.pointer, self.trajectory_start_index = 0, 0
         advantage_mean, advantage_std = (
             np.mean(self.total_advantage_buffer),
