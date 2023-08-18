@@ -2,19 +2,29 @@ import numpy as np
 from dissertation_files.agents.utils import logprobabilities
 
 
-def dqn_training_loop(episodes, agent, env, observation_dimensions, steps_target_model_update):
+def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoch, steps_target_model_update):
 
-    reward_list = []
+    observation = env.reset()[0]
+    average_reward_list = []
     step_counter = 0
+    episode_reward = 0
 
-    for episode in range(episodes):
-        observation = env.reset()[0]
-        observation = np.reshape(observation, [1, observation_dimensions])
-        done = False
-        episode_reward = 0
-        while not done:
+    for epoch in range(epochs):
+
+        epoch_total_reward = 0
+        epoch_episodes = 0
+
+        if epoch == 0:
+            full_episode = True
+        else:
+            full_episode = False
+
+        for t in range(steps_per_epoch):
+
+            observation = np.reshape(observation, [1, observation_dimensions])
             action = agent.sample_action(observation)
             next_observation, reward, done, truncated, _ = env.step(action)
+            episode_reward += reward
             if truncated:
                 done = True
             next_observation = np.reshape(next_observation, [1, observation_dimensions])
@@ -22,23 +32,40 @@ def dqn_training_loop(episodes, agent, env, observation_dimensions, steps_target
             agent.train_model()
             if step_counter % steps_target_model_update == 0 and step_counter != 0:
                 agent.update_target_model()
-            episode_reward += reward
             observation = next_observation
             step_counter += 1
-        print(f"episode: {episode + 1}/{episodes}, score: {episode_reward}")
-        reward_list.append(episode_reward)
+            if done:
+                if full_episode:
+                    epoch_total_reward += episode_reward
+                    epoch_episodes += 1
+                else:
+                    full_episode = True
+                episode_reward = 0
+                observation = env.reset()[0]
 
-    return reward_list
+        average_score_per_episode = epoch_total_reward / epoch_episodes
+        print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
+        average_reward_list.append(average_score_per_episode)
+
+    return average_reward_list
 
 
 def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
                       train_actor_iterations, train_critic_iterations):
 
-    observation, episode_reward = env.reset()[0], 0
-    reward_list = []
-    episodes = 0
+    observation = env.reset()[0]
+    average_reward_list = []
+    episode_reward = 0
 
     for epoch in range(epochs):
+
+        epoch_total_reward = 0
+        epoch_episodes = 0
+
+        if epoch == 0:
+            full_episode = True
+        else:
+            full_episode = False
 
         for t in range(steps_per_epoch):
 
@@ -59,10 +86,15 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             if done or (t == steps_per_epoch - 1):
                 last_value = 0 if done else agent.critic(observation.reshape(1, -1))
                 agent.buffer.finish_trajectory(last_value)
-                print(f"episode: {episodes+1}, score: {episode_reward}")
-                episodes += 1
-                reward_list.append(episode_reward)
-                observation, episode_reward = env.reset()[0], 0
+
+            if done:
+                if full_episode:
+                    epoch_total_reward += episode_reward
+                    epoch_episodes += 1
+                else:
+                    full_episode = True
+                episode_reward = 0
+                observation = env.reset()[0]
 
         (
             observation_buffer,
@@ -78,19 +110,33 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
         for _ in range(train_critic_iterations):
             agent.train_critic(observation_buffer, return_buffer)
 
-    return episodes, reward_list
+        average_score_per_episode = epoch_total_reward / epoch_episodes
+        print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
+        average_reward_list.append(average_score_per_episode)
+
+    return average_reward_list
 
 
 def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
                       train_actor_iterations, train_critic_iterations, train_rnd_iterations):
 
-    observation, episode_reward, episode_intrinsic_reward = env.reset()[0], 0, 0
+    observation = env.reset()[0]
     observation = np.reshape(observation, [1, observation_dimensions])
-    reward_list = []
-    intrinsic_reward_list = []
-    episodes = 0
+    average_intrinsic_reward_list = []
+    average_reward_list = []
+    episode_reward = 0
+    episode_intrinsic_reward = 0
 
     for epoch in range(epochs):
+
+        epoch_total_reward = 0
+        epoch_total_intrinsic_reward = 0
+        epoch_episodes = 0
+
+        if epoch == 0:
+            full_episode = True
+        else:
+            full_episode = False
 
         for t in range(steps_per_epoch):
 
@@ -113,13 +159,18 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             if done or (t == steps_per_epoch - 1):
                 last_value = 0 if done else agent.critic(observation.reshape(1, -1))
                 agent.buffer.finish_trajectory(last_value)
-                print(f"episode: {episodes + 1}, score: {episode_reward}, intrinsic reward: {episode_intrinsic_reward}")
-                episodes += 1
-                reward_list.append(episode_reward)
-                intrinsic_reward_list.append(episode_intrinsic_reward)
-                observation, episode_reward, episode_intrinsic_reward = env.reset()[0], 0, 0
-                observation = np.reshape(observation, [1, observation_dimensions])
 
+            if done:
+                if full_episode:
+                    epoch_total_reward += episode_reward
+                    epoch_total_intrinsic_reward += episode_intrinsic_reward
+                    epoch_episodes += 1
+                else:
+                    full_episode = True
+                episode_reward = 0
+                episode_intrinsic_reward = 0
+                observation = env.reset()[0]
+                observation = np.reshape(observation, [1, observation_dimensions])
         (
             observation_buffer,
             action_buffer,
@@ -138,4 +189,51 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
         for _ in range(train_rnd_iterations):
             agent.train_rnd_predictor(observation_buffer)
 
-    return episodes, reward_list, intrinsic_reward_list
+        average_score_per_episode = epoch_total_reward / epoch_episodes
+        average_intrinsic_reward_per_episode = epoch_total_intrinsic_reward / epoch_episodes
+        print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}, "
+              f"Average intrinsic per episode: {average_intrinsic_reward_per_episode}")
+        average_reward_list.append(average_score_per_episode)
+        average_intrinsic_reward_list.append(average_intrinsic_reward_per_episode)
+
+    return average_reward_list, average_intrinsic_reward_list
+
+
+def random_play_loop(epochs, agent, env, steps_per_epoch):
+
+    env.reset()
+    average_reward_list = []
+    episode_reward = 0
+
+    for epoch in range(epochs):
+
+        epoch_total_reward = 0
+        epoch_episodes = 0
+
+        if epoch == 0:
+            full_episode = True
+        else:
+            full_episode = False
+
+        for t in range(steps_per_epoch):
+
+            action = agent.sample_action()
+            _, reward, done, truncated, _ = env.step(action)
+            if truncated:
+                done = True
+            episode_reward += reward
+
+            if done:
+                if full_episode:
+                    epoch_total_reward += episode_reward
+                    epoch_episodes += 1
+                else:
+                    full_episode = True
+                episode_reward = 0
+                env.reset()
+
+        average_score_per_episode = epoch_total_reward / epoch_episodes
+        print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
+        average_reward_list.append(average_score_per_episode)
+
+    return average_reward_list

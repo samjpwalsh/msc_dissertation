@@ -1,13 +1,28 @@
-from dissertation_files.environments.simple_env import SimpleEnv
+from matplotlib import pyplot as plt
 from dissertation_files.agents.agent import RandomAgent
+from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
+from dissertation_files.agents.training import random_play_loop
 
-env = SimpleEnv(render_mode="human")
+"""
+## Hyperparameters
+"""
+
+STEPS_PER_EPOCH = 4000
+EPOCHS = 30
+
+"""
+## Run
+"""
+
+env = SimpleEnv(render_mode=None)
+env = FlatObsWrapper(env)
 action_dimensions = env.action_space.n
+
 agent = RandomAgent(action_dimensions)
-observation = env.reset()[0]
-done = False
-while not done:
-    action = agent.sample_action(observation)
-    next_observation, reward, done, truncated, _ = env.step(action)
-    observation = next_observation
-print(reward)
+
+average_reward_list = random_play_loop(EPOCHS, agent, env, STEPS_PER_EPOCH)
+
+reward_plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list)
+plt.show()
+

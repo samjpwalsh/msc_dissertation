@@ -34,9 +34,9 @@ action_dimensions = env.action_space.n
 agent = PPOAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HIDDEN_SIZES, INPUT_ACTIVATION,
                  OUTPUT_ACTIVATION, ACTOR_LEARNING_RATE, CRITIC_LEARNING_RATE, CLIP_RATIO, GAMMA, LAM)
 
-episodes, reward_list = ppo_training_loop(EPOCHS, agent, env, observation_dimensions, action_dimensions,
-                                          STEPS_PER_EPOCH, TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS)
+average_reward_list = ppo_training_loop(EPOCHS, agent, env, observation_dimensions, action_dimensions,
+                                        STEPS_PER_EPOCH, TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS)
 
-reward_plot = plt.plot([i+1 for i in range(episodes)], reward_list)
+reward_plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list)
 plt.show()
 

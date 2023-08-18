@@ -36,15 +36,15 @@ agent = RNDAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HID
                  OUTPUT_ACTIVATION, ACTOR_LEARNING_RATE, CRITIC_LEARNING_RATE, RND_PREDICTOR_LEARNING_RATE,
                  CLIP_RATIO, GAMMA, LAM)
 
-episodes, reward_list, intrinsic_reward_list = rnd_training_loop(EPOCHS, agent, env, observation_dimensions,
-                                                                 action_dimensions, STEPS_PER_EPOCH,
-                                                                 TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS,
-                                                                 TRAIN_RND_ITERATIONS)
+average_reward_list, average_intrinsic_reward_list = rnd_training_loop(EPOCHS, agent, env, observation_dimensions,
+                                                                       action_dimensions, STEPS_PER_EPOCH,
+                                                                       TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS,
+                                                                       TRAIN_RND_ITERATIONS)
 
-plot = plt.plot([i+1 for i in range(episodes)], reward_list, label="ext")
+plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list, label="ext")
 plt.legend()
 plt.show()
 
-plot = plt.plot([i+1 for i in range(episodes)], intrinsic_reward_list, label="int")
+plot = plt.plot([i+1 for i in range(EPOCHS)], average_intrinsic_reward_list, label="int")
 plt.legend()
 plt.show()
