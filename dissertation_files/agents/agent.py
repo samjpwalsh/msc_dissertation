@@ -11,7 +11,7 @@ class RandomAgent:
     def __init__(self, action_dimensions):
         self.action_dimensions = action_dimensions
 
-    def sample_action(self, observation):
+    def sample_action(self):
         return random.randrange(self.action_dimensions)
 
 

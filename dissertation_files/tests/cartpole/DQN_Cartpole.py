@@ -10,7 +10,8 @@ from dissertation_files.agents.training import dqn_training_loop
 Hyperparameters
 """
 
-EPISODES = 700
+STEPS_PER_EPOCH = 4000
+EPOCHS = 30
 BATCH_SIZE = 50
 MEMORY_SIZE = 10000
 GAMMA = 0.95
@@ -34,7 +35,7 @@ agent = DQNAgent(observation_dimensions, action_dimensions, MEMORY_SIZE, BATCH_S
                  HIDDEN_SIZES, INPUT_ACTIVATION, OUTPUT_ACTIVATION, LEARNING_RATE,
                  EPSILON, EPSILON_DECAY, MIN_EPSILON, GAMMA)
 
-reward_list = dqn_training_loop(EPISODES, agent, env, observation_dimensions, STEPS_TARGET_MODEL_UPDATE)
+average_reward_list = dqn_training_loop(EPOCHS, agent, env, observation_dimensions, STEPS_PER_EPOCH, STEPS_TARGET_MODEL_UPDATE)
 
-reward_plot = plt.plot([i+1 for i in range(EPISODES)], reward_list)
+reward_plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list)
 plt.show()

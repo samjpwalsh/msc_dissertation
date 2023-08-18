@@ -10,13 +10,14 @@ from dissertation_files.agents.training import dqn_training_loop
 Hyperparameters
 """
 
-EPISODES = 500
-BATCH_SIZE = 500  # larger batch size better for sparse reward environment
+STEPS_PER_EPOCH = 4000
+EPOCHS = 30
+BATCH_SIZE = 250  # 500 larger batch size better for sparse reward environment
 MEMORY_SIZE = 10000
 GAMMA = 0.95
 EPSILON = 1.0
 MIN_EPSILON = 0.01
-EPSILON_DECAY = 0.99
+EPSILON_DECAY = 0.999 # 0.99 - higher decay for more exploration for longer
 LEARNING_RATE = 0.001
 STEPS_TARGET_MODEL_UPDATE = 100
 HIDDEN_SIZES = (64, 64)
@@ -35,7 +36,7 @@ agent = DQNAgent(observation_dimensions, action_dimensions, MEMORY_SIZE, BATCH_S
                  HIDDEN_SIZES, INPUT_ACTIVATION, OUTPUT_ACTIVATION, LEARNING_RATE,
                  EPSILON, EPSILON_DECAY, MIN_EPSILON, GAMMA)
 
-reward_list = dqn_training_loop(EPISODES, agent, env, observation_dimensions, STEPS_TARGET_MODEL_UPDATE)
+average_reward_list = dqn_training_loop(EPOCHS, agent, env, observation_dimensions, STEPS_PER_EPOCH, STEPS_TARGET_MODEL_UPDATE)
 
-reward_plot = plt.plot([i+1 for i in range(EPISODES)], reward_list)
+reward_plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list)
 plt.show()
