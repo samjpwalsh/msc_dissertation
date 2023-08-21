@@ -1,8 +1,8 @@
 import gymnasium as gym
 from keras import activations
-from matplotlib import pyplot as plt
 from dissertation_files.agents.agent import RNDAgent
 from dissertation_files.agents.training import rnd_training_loop
+from dissertation_files.agents.evaluation import plot_evaluation_data
 
 
 """
@@ -23,12 +23,15 @@ LAM = 0.97
 HIDDEN_SIZES = (64, 64)
 INPUT_ACTIVATION = activations.relu
 OUTPUT_ACTIVATION = None
+EVALUATION_FREQUENCY = 2
+EVALUATION_EPISODES_PER_EPOCH = 10
 
 """
 ## Run
 """
 
 env = gym.make("CartPole-v1", render_mode=None)
+eval_env = gym.make('CartPole-v1', render_mode='human')
 observation_dimensions = env.observation_space.shape[0]
 action_dimensions = env.action_space.n
 
@@ -39,12 +42,8 @@ agent = RNDAgent(observation_dimensions, action_dimensions, STEPS_PER_EPOCH, HID
 average_reward_list, average_intrinsic_reward_list = rnd_training_loop(EPOCHS, agent, env, observation_dimensions,
                                                                        action_dimensions, STEPS_PER_EPOCH,
                                                                        TRAIN_ACTOR_ITERATIONS, TRAIN_CRITIC_ITERATIONS,
-                                                                       TRAIN_RND_ITERATIONS)
+                                                                       TRAIN_RND_ITERATIONS, eval_env=eval_env,
+                                                                       eval_epoch_frequency=EVALUATION_FREQUENCY,
+                                                                       eval_episodes_per_epoch=EVALUATION_EPISODES_PER_EPOCH)
 
-plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list, label="ext")
-plt.legend()
-plt.show()
-
-plot = plt.plot([i+1 for i in range(EPOCHS)], average_intrinsic_reward_list, label="int")
-plt.legend()
-plt.show()
+plot_evaluation_data([average_reward_list, average_intrinsic_reward_list], EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH)
