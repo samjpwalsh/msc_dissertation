@@ -3,6 +3,7 @@ from dissertation_files.agents.agent import RandomAgent
 from dissertation_files.environments.simple_env import SimpleEnv
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 from dissertation_files.agents.training import random_play_loop
+from dissertation_files.agents.evaluation import plot_evaluation_data
 
 """
 ## Hyperparameters
@@ -10,6 +11,7 @@ from dissertation_files.agents.training import random_play_loop
 
 STEPS_PER_EPOCH = 4000
 EPOCHS = 30
+EVALUATION_FREQUENCY = 2
 
 """
 ## Run
@@ -22,7 +24,8 @@ action_dimensions = env.action_space.n
 agent = RandomAgent(action_dimensions)
 
 average_reward_list = random_play_loop(EPOCHS, agent, env, STEPS_PER_EPOCH)
+average_reward_list = average_reward_list[0:len(average_reward_list)//EVALUATION_FREQUENCY]
 
-reward_plot = plt.plot([i+1 for i in range(EPOCHS)], average_reward_list)
-plt.show()
+plot_evaluation_data([average_reward_list], EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH)
+
 
