@@ -1,6 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.test_wall_env import TestWall
+from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 
 def run_dqn_evaluation(agent, eval_env, episodes):
     observation_dimensions = len(eval_env.reset()[0])
@@ -91,3 +93,33 @@ def plot_evaluation_data(rewards, epochs, eval_frequency, steps_per_epoch):
     plt.xticks(step_list)
     plt.title("Average reward after training for x steps")
     plt.show()
+
+def get_grid_representation(gridworld_env):
+    full_grid = gridworld_env.grid.encode()
+    simple_grid = []
+    for row in full_grid:
+        simple_row = []
+        for cell in row:
+            simple_row.append(cell[0])
+        simple_grid.append(simple_row)
+    return np.array(simple_grid).transpose()
+
+def get_unvisitable_cells(grid):
+    unvisitable_cells = []
+    grid_height = len(grid)
+    grid_width = len(grid[0])
+    for j in range(grid_height):
+        for i in range(grid_width):
+            if grid[i, j] == 2:  # wall
+                unvisitable_cells.append((i, j))
+    return unvisitable_cells
+
+# need to make sure (i, j) notation for unvisitable cells matches with agent_pos notation.
+def plot_exploration_heatmap():
+    pass
+
+env = TestWall(render_mode=None)
+env = FlatObsWrapper(env)
+env.reset()
+grid = get_grid_representation(env)
+u = get_unvisitable_cells(grid)
