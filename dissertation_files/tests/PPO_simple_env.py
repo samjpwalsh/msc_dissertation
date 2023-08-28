@@ -4,6 +4,7 @@ from dissertation_files.environments.simple_env import SimpleEnv
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 from dissertation_files.agents.training import ppo_training_loop
 from dissertation_files.agents.evaluation import plot_evaluation_data
+from dissertation_files.environments.test_wall_env import TestWall
 
 
 """
@@ -30,9 +31,9 @@ EVALUATION_EPISODES_PER_EPOCH = 1  # 10
 ## Run
 """
 
-env = SimpleEnv(render_mode=None)
+env = TestWall(render_mode=None)
 env = FlatObsWrapper(env)
-eval_env = SimpleEnv(render_mode='human')
+eval_env = TestWall(render_mode='human')
 eval_env = FlatObsWrapper(eval_env)
 observation_dimensions = len(env.reset()[0])
 action_dimensions = env.action_space.n
