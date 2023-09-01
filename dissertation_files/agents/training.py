@@ -9,6 +9,7 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
     observation = env.reset()[0]
     average_reward_list = []
     eval_average_reward_list = []
+    first_time_visits = {}
     step_counter = 0
     episode_reward = 0
 
@@ -41,6 +42,13 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
                 agent.update_target_model()
             observation = observation_new
             step_counter += 1
+
+            try:
+                if env.agent_pos not in first_time_visits:
+                    first_time_visits[env.agent_pos] = step_counter
+            except AttributeError:
+                first_time_visits = None
+
             if done:
                 if full_episode:
                     epoch_total_reward += episode_reward
@@ -59,9 +67,9 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
             eval_average_reward_list.append(eval_ave_reward)
 
     if eval_env is None:
-        return average_reward_list
+        return average_reward_list, first_time_visits
     else:
-        return eval_average_reward_list
+        return eval_average_reward_list, first_time_visits
 
 
 def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
@@ -71,7 +79,9 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     observation = env.reset()[0]
     average_reward_list = []
     eval_average_reward_list = []
+    first_time_visits = {}
     episode_reward = 0
+    step_counter = 0
 
     if eval_env is not None:
         eval_ave_reward = run_ppo_evaluation(agent, eval_env, eval_episodes_per_epoch)
@@ -102,6 +112,13 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             agent.buffer.store(observation, action, reward, value_t, logprobability_t)
 
             observation = observation_new
+
+            step_counter += 1
+            try:
+                if env.agent_pos not in first_time_visits:
+                    first_time_visits[env.agent_pos] = step_counter
+            except AttributeError:
+                first_time_visits = None
 
             if done or (t == steps_per_epoch - 1):
                 last_value = 0 if done else agent.critic(observation.reshape(1, -1))
@@ -139,9 +156,9 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             eval_average_reward_list.append(eval_ave_reward)
 
     if eval_env is None:
-        return average_reward_list
+        return average_reward_list, first_time_visits
     else:
-        return eval_average_reward_list
+        return eval_average_reward_list, first_time_visits
 
 
 def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
@@ -156,6 +173,8 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     eval_average_intrinsic_reward_list = []
     episode_reward = 0
     episode_intrinsic_reward = 0
+    step_counter = 0
+    first_time_visits = {}
 
     if eval_env is not None:
         eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch)
@@ -190,6 +209,13 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             agent.buffer.store(observation, action, extrinsic_reward, intrinsic_reward, value_t, logprobability_t)
 
             observation = observation_new
+
+            step_counter += 1
+            try:
+                if env.agent_pos not in first_time_visits:
+                    first_time_visits[env.agent_pos] = step_counter
+            except AttributeError:
+                first_time_visits = None
 
             if done or (t == steps_per_epoch - 1):
                 last_value = 0 if done else agent.critic(observation.reshape(1, -1))
@@ -237,9 +263,9 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             eval_average_intrinsic_reward_list.append(eval_ave_intrinsic_reward)
 
     if eval_env is None:
-        return average_reward_list, average_intrinsic_reward_list
+        return average_reward_list, average_intrinsic_reward_list, first_time_visits
     else:
-        return eval_average_reward_list, eval_average_intrinsic_reward_list
+        return eval_average_reward_list, eval_average_intrinsic_reward_list, first_time_visits
 
 
 def random_play_loop(epochs, agent, env, steps_per_epoch):
@@ -247,6 +273,8 @@ def random_play_loop(epochs, agent, env, steps_per_epoch):
     env.reset()
     average_reward_list = []
     episode_reward = 0
+    step_counter = 0
+    first_time_visits = {}
 
     for epoch in range(epochs):
 
@@ -266,6 +294,13 @@ def random_play_loop(epochs, agent, env, steps_per_epoch):
                 done = True
             episode_reward += reward
 
+            step_counter += 1
+            try:
+                if env.agent_pos not in first_time_visits:
+                    first_time_visits[env.agent_pos] = step_counter
+            except AttributeError:
+                first_time_visits = None
+
             if done:
                 if full_episode:
                     epoch_total_reward += episode_reward
@@ -279,4 +314,4 @@ def random_play_loop(epochs, agent, env, steps_per_epoch):
         print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
         average_reward_list.append(average_score_per_episode)
 
-    return average_reward_list
+    return average_reward_list, first_time_visits
