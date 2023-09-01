@@ -10,7 +10,7 @@ class TestWall(MiniGridEnv):
     def __init__(
             self,
             size=10,
-            agent_start_pos=(1, 1),
+            agent_start_pos=(1, 5),
             agent_start_dir=0,
             max_steps=500,
             **kwargs,

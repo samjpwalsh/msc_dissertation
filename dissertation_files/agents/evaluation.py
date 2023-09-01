@@ -111,15 +111,17 @@ def get_unvisitable_cells(grid):
     for j in range(grid_height):
         for i in range(grid_width):
             if grid[i, j] == 2:  # wall
-                unvisitable_cells.append((i, j))
+                unvisitable_cells.append((j, i))
     return unvisitable_cells
 
-# need to make sure (i, j) notation for unvisitable cells matches with agent_pos notation.
-def plot_exploration_heatmap():
+def plot_exploration_heatmap(gridworld_env, first_time_visits):
+    grid = get_grid_representation(gridworld_env)
+    unvisitable_cells = get_unvisitable_cells(grid)
     pass
 
 env = TestWall(render_mode=None)
 env = FlatObsWrapper(env)
 env.reset()
+x = env.agent_pos
 grid = get_grid_representation(env)
 u = get_unvisitable_cells(grid)
