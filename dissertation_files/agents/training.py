@@ -9,7 +9,7 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
     observation = env.reset()[0]
     average_reward_list = []
     eval_average_reward_list = []
-    first_time_visits = {}
+    first_time_visits = {env.agent_pos: 0}
     step_counter = 0
     episode_reward = 0
 
@@ -79,7 +79,7 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     observation = env.reset()[0]
     average_reward_list = []
     eval_average_reward_list = []
-    first_time_visits = {}
+    first_time_visits = {env.agent_pos: 0}
     episode_reward = 0
     step_counter = 0
 
@@ -174,7 +174,7 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     episode_reward = 0
     episode_intrinsic_reward = 0
     step_counter = 0
-    first_time_visits = {}
+    first_time_visits = {env.agent_pos: 0}
 
     if eval_env is not None:
         eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch)
@@ -274,7 +274,7 @@ def random_play_loop(epochs, agent, env, steps_per_epoch):
     average_reward_list = []
     episode_reward = 0
     step_counter = 0
-    first_time_visits = {}
+    first_time_visits = {env.agent_pos: 0}
 
     for epoch in range(epochs):
 
