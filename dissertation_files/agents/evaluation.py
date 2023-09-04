@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
+import seaborn as sns
 from dissertation_files.environments.simple_env import SimpleEnv
 from dissertation_files.environments.test_wall_env import TestWall
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
@@ -105,23 +107,42 @@ def get_grid_representation(gridworld_env):
     return np.array(simple_grid).transpose()
 
 def get_unvisitable_cells(grid):
-    unvisitable_cells = []
+    unvisitable_cells = {}
     grid_height = len(grid)
     grid_width = len(grid[0])
     for j in range(grid_height):
         for i in range(grid_width):
             if grid[i, j] == 2:  # wall
-                unvisitable_cells.append((j, i))
+                unvisitable_cells[(j, i)] = -1
     return unvisitable_cells
 
 def plot_exploration_heatmap(gridworld_env, first_time_visits):
     grid = get_grid_representation(gridworld_env)
     unvisitable_cells = get_unvisitable_cells(grid)
-    pass
+    updated_ftvs = first_time_visits.copy()
+    updated_ftvs.update(unvisitable_cells)
+    ser = pd.Series(list(updated_ftvs.values()),
+                    index=pd.MultiIndex.from_tuples(updated_ftvs.keys()))
+    df = ser.unstack().transpose().fillna(max(updated_ftvs.values()) + 1)
+    cmap = sns.color_palette("coolwarm", as_cmap=True)
+    cmap.set_under("grey")  # walls
+    cmap.set_over("black")  # unvisited states
+    sns.heatmap(df, vmin=0, vmax=max(updated_ftvs.values()), cmap=cmap, xticklabels=False, yticklabels=False)
+    plt.show()
 
-env = TestWall(render_mode=None)
-env = FlatObsWrapper(env)
-env.reset()
-x = env.agent_pos
-grid = get_grid_representation(env)
-u = get_unvisitable_cells(grid)
+def plot_state_visit_percentage(gridworld_env, first_time_visits, epochs, steps_per_epoch):
+    grid = get_grid_representation(gridworld_env)
+    total_states = grid.shape[0] * grid.shape[1]
+    unvisitable_cells = get_unvisitable_cells(grid)
+    total_states -= len(unvisitable_cells)
+    state_visit_steps = sorted(list(first_time_visits.values()))
+    y = [((i+1)/total_states) * 100 for i in range(len(state_visit_steps))]
+    y.append(y[-1])
+    state_visit_steps.append(steps_per_epoch * epochs)
+    plt.plot(state_visit_steps, y)
+    plt.ylabel("Percentage of grid cells explored")
+    plt.xlabel("Training Steps")
+    plt.xlim(0, steps_per_epoch * epochs)
+    plt.ylim(0, 100)
+    plt.title("Percentage of the environment explored throughout training")
+    plt.show()
