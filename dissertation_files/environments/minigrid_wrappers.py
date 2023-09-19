@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 from minigrid.wrappers import ObservationWrapper
-from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.minigrid_environments import SimpleEnv
 from dissertation_files.agents.agent import RandomAgent
 
 

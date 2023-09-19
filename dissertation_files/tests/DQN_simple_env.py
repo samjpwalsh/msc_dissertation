@@ -1,5 +1,5 @@
 from keras import activations
-from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.minigrid_environments import SimpleEnv
 from dissertation_files.agents.agent import DQNAgent
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 from dissertation_files.agents.training import dqn_training_loop

@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 from dissertation_files.agents.agent import RandomAgent
-from dissertation_files.environments.simple_env import SimpleEnv
+from dissertation_files.environments.minigrid_environments import SimpleEnv
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 from dissertation_files.agents.training import random_play_loop
 from dissertation_files.agents.evaluation import plot_evaluation_data
