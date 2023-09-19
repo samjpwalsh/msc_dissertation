@@ -1,10 +1,11 @@
 import numpy as np
 from dissertation_files.agents.utils import logprobabilities
-from dissertation_files.agents.evaluation import run_dqn_evaluation, run_ppo_evaluation, run_rnd_evaluation
+from dissertation_files.agents.evaluation import run_random_evaluation, run_dqn_evaluation, run_ppo_evaluation, \
+    run_rnd_evaluation
 
 
 def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoch, steps_target_model_update,
-                      eval_env=None, eval_epoch_frequency=1, eval_episodes_per_epoch=10):
+                      video_folder, eval_env=None, eval_epoch_frequency=1, eval_episodes_per_epoch=10):
 
     observation = env.reset()[0]
     average_reward_list = []
@@ -14,7 +15,7 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
     episode_reward = 0
 
     if eval_env is not None:
-        eval_ave_reward = run_dqn_evaluation(agent, eval_env, eval_episodes_per_epoch)
+        eval_ave_reward = run_dqn_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, 0)
         eval_average_reward_list.append(eval_ave_reward)
 
     for epoch in range(epochs):
@@ -63,7 +64,7 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
         average_reward_list.append(average_score_per_episode)
 
         if eval_env is not None and ((epoch + 1) % eval_epoch_frequency == 0):
-            eval_ave_reward = run_dqn_evaluation(agent, eval_env, eval_episodes_per_epoch)
+            eval_ave_reward = run_dqn_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, epoch+1)
             eval_average_reward_list.append(eval_ave_reward)
 
     if eval_env is None:
@@ -73,8 +74,8 @@ def dqn_training_loop(epochs, agent, env, observation_dimensions, steps_per_epoc
 
 
 def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
-                      train_actor_iterations, train_critic_iterations, eval_env=None, eval_epoch_frequency=1,
-                      eval_episodes_per_epoch=10):
+                      train_actor_iterations, train_critic_iterations, video_folder, eval_env=None,
+                      eval_epoch_frequency=1, eval_episodes_per_epoch=10):
 
     observation = env.reset()[0]
     average_reward_list = []
@@ -84,7 +85,7 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     step_counter = 0
 
     if eval_env is not None:
-        eval_ave_reward = run_ppo_evaluation(agent, eval_env, eval_episodes_per_epoch)
+        eval_ave_reward = run_ppo_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, 0)
         eval_average_reward_list.append(eval_ave_reward)
 
     for epoch in range(epochs):
@@ -152,7 +153,7 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
         average_reward_list.append(average_score_per_episode)
 
         if eval_env is not None and ((epoch + 1) % eval_epoch_frequency == 0):
-            eval_ave_reward = run_ppo_evaluation(agent, eval_env, eval_episodes_per_epoch)
+            eval_ave_reward = run_ppo_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, epoch+1)
             eval_average_reward_list.append(eval_ave_reward)
 
     if eval_env is None:
@@ -162,8 +163,8 @@ def ppo_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
 
 
 def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensions, steps_per_epoch,
-                      train_actor_iterations, train_critic_iterations, train_rnd_iterations, eval_env=None,
-                      eval_epoch_frequency=1, eval_episodes_per_epoch=10):
+                      train_actor_iterations, train_critic_iterations, train_rnd_iterations, video_folder,
+                      eval_env=None, eval_epoch_frequency=1, eval_episodes_per_epoch=10):
 
     observation = env.reset()[0]
     observation = np.reshape(observation, [1, observation_dimensions])
@@ -177,7 +178,8 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
     first_time_visits = {env.agent_pos: 0}
 
     if eval_env is not None:
-        eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch)
+        eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch,
+                                                                        video_folder, 0)
         eval_average_reward_list.append(eval_ave_reward)
         eval_average_intrinsic_reward_list.append(eval_ave_intrinsic_reward)
 
@@ -258,7 +260,8 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
         average_intrinsic_reward_list.append(average_intrinsic_reward_per_episode)
 
         if eval_env is not None and ((epoch + 1) % eval_epoch_frequency == 0):
-            eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch)
+            eval_ave_reward, eval_ave_intrinsic_reward = run_rnd_evaluation(agent, eval_env, eval_episodes_per_epoch,
+                                                                            video_folder, epoch+1)
             eval_average_reward_list.append(eval_ave_reward)
             eval_average_intrinsic_reward_list.append(eval_ave_intrinsic_reward)
 
@@ -268,13 +271,19 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
         return eval_average_reward_list, eval_average_intrinsic_reward_list, first_time_visits
 
 
-def random_play_loop(epochs, agent, env, steps_per_epoch):
+def random_play_loop(epochs, agent, env, steps_per_epoch, video_folder, eval_env=None, eval_epoch_frequency=1,
+                     eval_episodes_per_epoch=10):
 
     env.reset()
     average_reward_list = []
-    episode_reward = 0
-    step_counter = 0
+    eval_average_reward_list = []
     first_time_visits = {env.agent_pos: 0}
+    step_counter = 0
+    episode_reward = 0
+
+    if eval_env is not None:
+        eval_ave_reward = run_random_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, 0)
+        eval_average_reward_list.append(eval_ave_reward)
 
     for epoch in range(epochs):
 
@@ -314,4 +323,11 @@ def random_play_loop(epochs, agent, env, steps_per_epoch):
         print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
         average_reward_list.append(average_score_per_episode)
 
-    return average_reward_list, first_time_visits
+        if eval_env is not None and ((epoch + 1) % eval_epoch_frequency == 0):
+            eval_ave_reward = run_random_evaluation(agent, eval_env, eval_episodes_per_epoch, video_folder, epoch+1)
+            eval_average_reward_list.append(eval_ave_reward)
+
+    if eval_env is None:
+        return average_reward_list, first_time_visits
+    else:
+        return eval_average_reward_list, first_time_visits
