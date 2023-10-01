@@ -1,14 +1,11 @@
 import numpy as np
-import gymnasium as gym
 from gymnasium import spaces
 from minigrid.wrappers import ObservationWrapper
-from dissertation_files.environments.minigrid_environments import SimpleEnv
-from dissertation_files.agents.agent import RandomAgent
-
 
 class FlatObsWrapper(ObservationWrapper):
     # Transforms the observation into only the image component scaled to the grid size, and removes the colour component.
     # Still partially observable, direction component not included.
+    # Removes drop and done actions
 
     def __init__(self, env):
         super().__init__(env)
