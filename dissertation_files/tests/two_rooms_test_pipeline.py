@@ -5,7 +5,7 @@ import pickle
 import datetime as dt
 from dissertation_files.agents import config
 from dissertation_files.agents.agent import RandomAgent, DQNAgent, PPOAgent, RNDAgent
-from dissertation_files.environments.minigrid_environments import SimpleEnv
+from dissertation_files.environments.minigrid_environments import DoorKeyEnv, TwoRooms
 from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
 from dissertation_files.agents.training import random_play_loop, dqn_training_loop, ppo_training_loop, rnd_training_loop
 from dissertation_files.agents.evaluation import get_all_visitable_cells
@@ -30,9 +30,9 @@ if __name__ == "__main__":
     Environment Set Up
     """
 
-    env = SimpleEnv(render_mode=None)
+    env = TwoRooms(render_mode=None)
     env = FlatObsWrapper(env)
-    eval_env = SimpleEnv(render_mode='rgb_array')
+    eval_env = TwoRooms(render_mode='rgb_array')
     eval_env = FlatObsWrapper(eval_env)
     observation_dimensions = len(env.reset()[0])
     action_dimensions = env.action_space.n
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     #     print(f"Random Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/two_rooms/videos'
     #     else:
     #         video_folder = None
     #
@@ -87,10 +87,10 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/random_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/random_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/random_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/random_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
 
     # """
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     #     print(f"DQN Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/two_rooms/videos'
     #     else:
     #         video_folder = None
     #
@@ -154,13 +154,13 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/dqn_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/dqn_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/dqn_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/dqn_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
-
-
+    #
+    #
     # """
     # PPO
     # """
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     #     print(f"PPO Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/two_rooms/videos'
     #     else:
     #         video_folder = None
     #
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     #     env.reset()
     #     eval_env.reset()
     #     print("=============================================")
-
+    #
     # for key in ftvs.copy().keys():
     #     if ftvs[key] == []:
     #         ftvs.pop(key)
@@ -223,12 +223,12 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/two_rooms/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
-    #
+
     """
     RND
     """
@@ -240,7 +240,7 @@ if __name__ == "__main__":
         print(f"RND Agent Run {i+1}")
 
         if i == 0:
-            video_folder = './test_data/simple_env/videos'
+            video_folder = './test_data/two_rooms/videos'
         else:
             video_folder = None
 
@@ -290,8 +290,8 @@ if __name__ == "__main__":
         else:
             ftvs[key] = np.mean(ftvs[key])
 
-    with open(rf'./test_data/simple_env/data/rnd_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'./test_data/two_rooms/data/rnd_rewards_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(rewards, f)
 
-    with open(rf'./test_data/simple_env/data/rnd_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'./test_data/two_rooms/data/rnd_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(ftvs, f)

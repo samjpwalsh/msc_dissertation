@@ -15,24 +15,15 @@ EVALUATION_FREQUENCY = simple_env_test_pipeline.EVALUATION_FREQUENCY
 Load data
 """
 
-random_rewards = load_file_for_plot('random', 'rewards', '2023-09-18')
-dqn_rewards = load_file_for_plot('dqn', 'rewards', '2023-09-18')
-ppo_rewards = load_file_for_plot('ppo', 'rewards', '2023-09-18')
-rnd_rewards = load_file_for_plot('rnd', 'rewards', '2023-09-18')
+random_rewards = load_file_for_plot('simple_env', 'random', 'rewards', '2023-09-19')
+dqn_rewards = load_file_for_plot('simple_env', 'dqn', 'rewards', '2023-09-19')
+ppo_rewards = load_file_for_plot('simple_env', 'ppo', 'rewards', '2023-09-20')
+rnd_rewards = load_file_for_plot('simple_env', 'rnd', 'rewards', '2023-09-20')
 
-random_ftvs = load_file_for_plot('random', 'ftvs', '2023-09-18')
-dqn_ftvs = load_file_for_plot('dqn', 'ftvs', '2023-09-18')
-ppo_ftvs = load_file_for_plot('ppo', 'ftvs', '2023-09-18')
-rnd_ftvs = load_file_for_plot('rnd', 'ftvs', '2023-09-18')
-
-"""
-Heatmaps
-"""
-
-plot_exploration_heatmap(env, random_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
-plot_exploration_heatmap(env, dqn_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
-plot_exploration_heatmap(env, ppo_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
-plot_exploration_heatmap(env, rnd_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
+random_ftvs = load_file_for_plot('simple_env', 'random', 'ftvs', '2023-09-19')
+dqn_ftvs = load_file_for_plot('simple_env', 'dqn', 'ftvs', '2023-09-19')
+ppo_ftvs = load_file_for_plot('simple_env', 'ppo', 'ftvs', '2023-09-20')
+rnd_ftvs = load_file_for_plot('simple_env', 'rnd', 'ftvs', '2023-09-20')
 
 """
 Reward
@@ -47,3 +38,12 @@ State visit %
 
 ftvs = random_ftvs | dqn_ftvs | ppo_ftvs | rnd_ftvs
 plot_state_visit_percentage(env, ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
+
+"""
+Heatmaps
+"""
+
+plot_exploration_heatmap(env, random_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
+plot_exploration_heatmap(env, dqn_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
+plot_exploration_heatmap(env, ppo_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')
+plot_exploration_heatmap(env, rnd_ftvs, EPOCHS, STEPS_PER_EPOCH, 'simple_env')

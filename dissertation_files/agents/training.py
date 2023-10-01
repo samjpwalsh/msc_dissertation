@@ -319,6 +319,8 @@ def random_play_loop(epochs, agent, env, steps_per_epoch, video_folder, eval_env
                 episode_reward = 0
                 env.reset()
 
+        if epoch_episodes == 0:
+            x=1
         average_score_per_episode = epoch_total_reward / epoch_episodes
         print(f"Epoch: {epoch + 1}/{epochs}, Average score per episode: {average_score_per_episode}")
         average_reward_list.append(average_score_per_episode)

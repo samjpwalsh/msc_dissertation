@@ -223,8 +223,11 @@ class RNDAgent:
     def calculate_intrinsic_reward(self, observation):
         prediction = self.rnd_predictor(observation)
         target = self.rnd_target(observation)
-        error = np.square(target - prediction)
-        return float(error)
+        error = float(np.square(target - prediction))
+        if error < 0.01:
+            return -error
+        else:
+            return error
 
     @tf.function
     def train_actor(

@@ -111,8 +111,8 @@ def run_rnd_evaluation(agent, eval_env, episodes, video_folder, current_epoch):
     return average_reward, average_intrinsic_reward
 
 
-def load_file_for_plot(algorithm, obj, date):
-    with open(f'./test_data/simple_env/data/{algorithm}_{obj}_{date}.pkl', 'rb') as f:
+def load_file_for_plot(environment, algorithm, obj, date):
+    with open(f'./test_data/{environment}/data/{algorithm}_{obj}_{date}.pkl', 'rb') as f:
         file = {algorithm: pickle.load(f)}
     return file
 
@@ -180,6 +180,8 @@ def plot_evaluation_data(rewards, epochs, eval_frequency, steps_per_epoch, env_n
                         [ave_reward[i] - std_dev[i] for i in range(len(ave_reward))],
                         [ave_reward[i] + std_dev[i] for i in range(len(ave_reward))],
                         alpha=0.2)
+    plt.xlim(0, steps_per_epoch * epochs)
+    plt.ylim(0, 1)
     plt.ylabel("Average Extrinsic Reward")
     plt.xlabel("Training Steps")
     plt.title("Average reward after training for x steps")
