@@ -6,6 +6,7 @@ from minigrid.core.world_object import Door, Goal, Key, Wall
 from minigrid.minigrid_env import MiniGridEnv
 from enum import IntEnum
 from gymnasium import spaces
+from minigrid.wrappers import ObservationWrapper
 from gymnasium.core import ActType, ObsType
 from typing import Any, Iterable, SupportsFloat, TypeVar
 import numpy as np
@@ -27,6 +28,14 @@ class TwoRoomsActions(IntEnum):
     forward = 2
     # Toggle/activate an object
     toggle = 3
+
+
+class SpiralMazeActions(IntEnum):
+    # Turn left, turn right, move forward
+    left = 0
+    right = 1
+    forward = 2
+
 
 class SimpleEnv(MiniGridEnv):
     def __init__(
@@ -69,6 +78,7 @@ class SimpleEnv(MiniGridEnv):
         self.agent_dir = self.agent_start_dir
 
         self.mission = "simple env"
+
 
 class DoorKeyEnv(MiniGridEnv):
     def __init__(
@@ -295,3 +305,159 @@ class TwoRooms(MiniGridEnv):
         obs = self.gen_obs()
 
         return obs, reward, terminated, truncated, {}
+
+
+class SpiralMaze(MiniGridEnv):
+    def __init__(
+            self,
+            size=15,
+            agent_start_pos=(6, 1),
+            agent_start_dir=1,
+            max_steps=1000,
+            **kwargs,
+    ):
+        self.agent_start_pos = agent_start_pos
+        self.agent_start_dir = agent_start_dir
+
+        mission_space = MissionSpace(mission_func=self._gen_mission)
+
+        super().__init__(
+            mission_space=mission_space,
+            grid_size=size,
+            see_through_walls=False,
+            max_steps=max_steps,
+            **kwargs,
+        )
+
+        self.actions = SpiralMazeActions
+        self.action_space = spaces.Discrete(len(self.actions))
+
+    @staticmethod
+    def _gen_mission():
+        return "spiral maze"
+
+    def _gen_grid(self, width, height):
+        # Create an empty grid
+        self.grid = Grid(width, height)
+
+        # Generate the surrounding walls
+        self.grid.wall_rect(0, 0, width, height)
+        for i in range(1, 14):
+            self.grid.set(1, i, Wall())
+            self.grid.set(13, i, Wall())
+
+        # build the spiral
+        for i in range(3, 14):
+            self.grid.set(2, i, Wall())
+            self.grid.set(12, i, Wall())
+        for j in range(1, 4):
+            for i in range(2, 6):
+                self.grid.set(i, j, Wall())
+            for i in range(9, 13):
+                self.grid.set(i, j, Wall())
+        for i in range(2, 11):
+            self.grid.set(i, 5, Wall())
+        for i in range(6, 13):
+            self.grid.set(10, i, Wall())
+        for i in range(4, 10):
+            self.grid.set(i, 12, Wall())
+        for i in range(7, 12):
+            self.grid.set(4, i, Wall())
+        for i in range(5, 9):
+            self.grid.set(i, 7, Wall())
+        for i in range(8, 11):
+            self.grid.set(8, i, Wall())
+        for i in range(6, 8):
+            self.grid.set(i, 10, Wall())
+        self.grid.set(6, 9, Wall())
+
+        # Place a goal square in room 2
+        self.put_obj(Goal(), 7, 9)
+
+        # Place the agent
+        self.agent_pos = self.agent_start_pos
+        self.agent_dir = self.agent_start_dir
+
+        self.mission = "spiral maze"
+
+    def step(
+            self, action: ActType
+    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+        self.step_count += 1
+
+        reward = 0
+        terminated = False
+        truncated = False
+
+        # Get the position in front of the agent
+        fwd_pos = self.front_pos
+
+        # Get the contents of the cell in front of the agent
+        fwd_cell = self.grid.get(*fwd_pos)
+
+        # Rotate left
+        if action == self.actions.left:
+            self.agent_dir -= 1
+            if self.agent_dir < 0:
+                self.agent_dir += 4
+
+        # Rotate right
+        elif action == self.actions.right:
+            self.agent_dir = (self.agent_dir + 1) % 4
+
+        # Move forward
+        elif action == self.actions.forward:
+            if fwd_cell is None or fwd_cell.can_overlap():
+                self.agent_pos = tuple(fwd_pos)
+            if fwd_cell is not None and fwd_cell.type == "goal":
+                terminated = True
+                reward = self._reward()
+            if fwd_cell is not None and fwd_cell.type == "lava":
+                terminated = True
+
+        else:
+            raise ValueError(f"Unknown action: {action}")
+
+        if self.step_count >= self.max_steps:
+            truncated = True
+
+        if self.render_mode == "human":
+            self.render()
+
+        obs = self.gen_obs()
+
+        reward *= 100  # modify reward to give stronger signal
+
+        return obs, reward, terminated, truncated, {}
+
+
+class FlatObsWrapper(ObservationWrapper):
+    # Transforms the observation into only the image component scaled to the grid size, and removes the colour component.
+    # Still partially observable, direction component not included.
+    # Removes drop and done actions
+
+    def __init__(self, env):
+        super().__init__(env)
+
+        self.flat_grid_size = self.env.width * self.env.height * 2
+
+        self.observation_space = spaces.Box(
+            low=0,
+            high=255,
+            shape=(self.flat_grid_size,),
+            dtype="uint8"
+        )
+
+    def observation(self, obs):
+        grid = obs["image"]
+        new_grid = []
+        for i in grid:
+            new_row = []
+            for j in i:
+                new_j = [j[0], j[2]]
+                new_row.append(new_j)
+            new_grid.append(new_row)
+        new_grid = np.array(new_grid)
+        obs = new_grid.flatten()
+
+        return obs

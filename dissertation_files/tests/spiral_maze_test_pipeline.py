@@ -5,9 +5,10 @@ import pickle
 import datetime as dt
 from dissertation_files.agents import config
 from dissertation_files.agents.agent import RandomAgent, DQNAgent, PPOAgent, RNDAgent
-from dissertation_files.environments.minigrid_environments import SimpleEnv, FlatObsWrapper
+from dissertation_files.environments.minigrid_environments import FlatObsWrapper, SpiralMaze
 from dissertation_files.agents.training import random_play_loop, dqn_training_loop, ppo_training_loop, rnd_training_loop
 from dissertation_files.agents.evaluation import get_all_visitable_cells
+import tensorflow as tf
 
 
 warnings.filterwarnings("ignore")
@@ -21,7 +22,7 @@ STEPS_PER_EPOCH = 4000
 EPOCHS = 30
 EVALUATION_FREQUENCY = 2
 EVALUATION_EPISODES_PER_EPOCH = 10
-EVALUATION_PIPELINE_RUNS = 10
+EVALUATION_PIPELINE_RUNS = 1 # 10
 
 if __name__ == "__main__":
 
@@ -29,9 +30,9 @@ if __name__ == "__main__":
     Environment Set Up
     """
 
-    env = SimpleEnv(render_mode=None)
+    env = SpiralMaze(render_mode=None)
     env = FlatObsWrapper(env)
-    eval_env = SimpleEnv(render_mode='rgb_array')
+    eval_env = SpiralMaze(render_mode='rgb_array')
     eval_env = FlatObsWrapper(eval_env)
     observation_dimensions = len(env.reset()[0])
     action_dimensions = env.action_space.n
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     #     print(f"Random Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/spiral_maze/videos'
     #     else:
     #         video_folder = None
     #
@@ -86,12 +87,12 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/random_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/random_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/random_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/random_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
-
+    #
     # """
     # DQN
     # """
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     #     print(f"DQN Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/spiral_maze/videos'
     #     else:
     #         video_folder = None
     #
@@ -153,13 +154,13 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/dqn_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/dqn_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/dqn_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/dqn_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
-
-
+    #
+    #
     # """
     # PPO
     # """
@@ -171,7 +172,7 @@ if __name__ == "__main__":
     #     print(f"PPO Agent Run {i+1}")
     #
     #     if i == 0:
-    #         video_folder = './test_data/simple_env/videos'
+    #         video_folder = './test_data/spiral_maze/videos'
     #     else:
     #         video_folder = None
     #
@@ -211,7 +212,7 @@ if __name__ == "__main__":
     #     env.reset()
     #     eval_env.reset()
     #     print("=============================================")
-
+    #
     # for key in ftvs.copy().keys():
     #     if ftvs[key] == []:
     #         ftvs.pop(key)
@@ -222,12 +223,12 @@ if __name__ == "__main__":
     #     else:
     #         ftvs[key] = np.mean(ftvs[key])
     #
-    # with open(rf'./test_data/simple_env/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(rewards, f)
     #
-    # with open(rf'./test_data/simple_env/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    # with open(rf'./test_data/spiral_maze/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
     #     pickle.dump(ftvs, f)
-    #
+
     """
     RND
     """
@@ -239,7 +240,7 @@ if __name__ == "__main__":
         print(f"RND Agent Run {i+1}")
 
         if i == 0:
-            video_folder = './test_data/simple_env/videos'
+            video_folder = './test_data/spiral_maze/videos'
         else:
             video_folder = None
 
@@ -289,8 +290,8 @@ if __name__ == "__main__":
         else:
             ftvs[key] = np.mean(ftvs[key])
 
-    with open(rf'./test_data/simple_env/data/rnd_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'./test_data/spiral_maze/data/rnd_rewards_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(rewards, f)
 
-    with open(rf'./test_data/simple_env/data/rnd_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'./test_data/spiral_maze/data/rnd_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(ftvs, f)
