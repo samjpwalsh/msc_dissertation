@@ -1,7 +1,6 @@
 from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
     plot_state_visit_percentage, load_file_for_plot
-from dissertation_files.environments.minigrid_environments import SimpleEnv
-from dissertation_files.environments.minigrid_wrappers import FlatObsWrapper
+from dissertation_files.environments.minigrid_environments import SimpleEnv, FlatObsWrapper
 import simple_env_test_pipeline
 
 env = SimpleEnv(render_mode=None)

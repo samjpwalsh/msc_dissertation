@@ -224,10 +224,7 @@ class RNDAgent:
         prediction = self.rnd_predictor(observation)
         target = self.rnd_target(observation)
         error = float(np.square(target - prediction))
-        if error < 0.01:
-            return -error
-        else:
-            return error
+        return error
 
     @tf.function
     def train_actor(

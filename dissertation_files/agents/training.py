@@ -220,7 +220,7 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
                 first_time_visits = None
 
             if done or (t == steps_per_epoch - 1):
-                last_value = 0 if done else agent.critic(observation.reshape(1, -1))
+                last_value = agent.critic(observation.reshape(1, -1))  # 0 if done else
                 agent.buffer.finish_trajectory(last_value)
 
             if done:
