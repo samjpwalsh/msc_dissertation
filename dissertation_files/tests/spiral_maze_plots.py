@@ -17,12 +17,12 @@ Load data
 # random_rewards = load_file_for_plot('spiral_maze', 'random', 'rewards', '2023-10-01')
 # dqn_rewards = load_file_for_plot('spiral_maze', 'dqn', 'rewards', '2023-10-01')
 # ppo_rewards = load_file_for_plot('spiral_maze', 'ppo', 'rewards', '2023-10-01')
-rnd_rewards = load_file_for_plot('spiral_maze', 'rnd', 'rewards', '2023-10-12')
+rnd_rewards = load_file_for_plot('spiral_maze', 'rnd', 'rewards', '2023-10-31')
 
 # random_ftvs = load_file_for_plot('spiral_maze', 'random', 'ftvs', '2023-10-01')
 # dqn_ftvs = load_file_for_plot('spiral_maze', 'dqn', 'ftvs', '2023-10-01')
 # ppo_ftvs = load_file_for_plot('spiral_maze', 'ppo', 'ftvs', '2023-10-01')
-rnd_ftvs = load_file_for_plot('spiral_maze', 'rnd', 'ftvs', '2023-10-12')
+rnd_ftvs = load_file_for_plot('spiral_maze', 'rnd', 'ftvs', '2023-10-31')
 
 """
 Reward

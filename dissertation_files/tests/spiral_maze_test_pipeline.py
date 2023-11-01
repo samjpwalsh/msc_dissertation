@@ -5,7 +5,7 @@ import pickle
 import datetime as dt
 from dissertation_files.agents import config
 from dissertation_files.agents.agent import RandomAgent, DQNAgent, PPOAgent, RNDAgent
-from dissertation_files.environments.minigrid_environments import FlatObsWrapper, SpiralMaze
+from dissertation_files.environments.minigrid_environments import FlatObsWrapper, SpiralMaze, RGBImgPartialObsWrapper
 from dissertation_files.agents.training import random_play_loop, dqn_training_loop, ppo_training_loop, rnd_training_loop
 from dissertation_files.agents.evaluation import get_all_visitable_cells
 import tensorflow as tf
@@ -20,9 +20,9 @@ Training & Evaluation Hyperparameters
 
 STEPS_PER_EPOCH = 4000
 EPOCHS = 30
-EVALUATION_FREQUENCY = 2
-EVALUATION_EPISODES_PER_EPOCH = 10
-EVALUATION_PIPELINE_RUNS = 1 # 10
+EVALUATION_FREQUENCY = 5  # 10
+EVALUATION_EPISODES_PER_EPOCH = 5  # 10
+EVALUATION_PIPELINE_RUNS = 1  # 10
 
 if __name__ == "__main__":
 
@@ -30,10 +30,10 @@ if __name__ == "__main__":
     Environment Set Up
     """
 
-    env = SpiralMaze(render_mode=None)
-    env = FlatObsWrapper(env)
+    env = SpiralMaze(render_mode='rgb_array')
+    env = RGBImgPartialObsWrapper(env)
     eval_env = SpiralMaze(render_mode='rgb_array')
-    eval_env = FlatObsWrapper(eval_env)
+    eval_env = RGBImgPartialObsWrapper(eval_env)
     observation_dimensions = len(env.reset()[0])
     action_dimensions = env.action_space.n
 
