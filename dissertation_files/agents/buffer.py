@@ -147,10 +147,19 @@ class RNDBuffer:
         )[:-1]
 
         # Intrinsic Rewards and Advantages
+        # Nomalize IRs
 
         int_deltas = intrinsic_rewards[:-1] - intrinsic_rewards[1:]
         self.intrinsic_advantage_buffer[path_slice] = int_deltas
+
+        ir_mean, ir_std = (
+            np.mean(intrinsic_rewards),
+            np.std(intrinsic_rewards),
+        )
+        intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
         self.intrinsic_reward_buffer[path_slice] = intrinsic_rewards[:-1]
+
+
 
         # Overall Advantages
 

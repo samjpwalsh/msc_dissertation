@@ -10,6 +10,10 @@ from minigrid.wrappers import ObservationWrapper
 from gymnasium.core import ActType, ObsType
 from typing import Any, Iterable, SupportsFloat, TypeVar
 import numpy as np
+from dissertation_files.agents import config
+from keras.models import Sequential
+from keras.layers import Flatten, Conv2D, MaxPooling2D, BatchNormalization, Activation, Input
+import tensorflow as tf
 
 class DoorKeyActions(IntEnum):
     # Turn left, turn right, move forward
@@ -31,6 +35,12 @@ class TwoRoomsActions(IntEnum):
 
 
 class SpiralMazeActions(IntEnum):
+    # Turn left, turn right, move forward
+    left = 0
+    right = 1
+    forward = 2
+
+class SimpleEnvActions(IntEnum):
     # Turn left, turn right, move forward
     left = 0
     right = 1
@@ -59,6 +69,9 @@ class SimpleEnv(MiniGridEnv):
             **kwargs,
         )
 
+        self.actions = SimpleEnvActions
+        self.action_space = spaces.Discrete(len(self.actions))
+
     @staticmethod
     def _gen_mission():
         return "simple env"
@@ -78,6 +91,56 @@ class SimpleEnv(MiniGridEnv):
         self.agent_dir = self.agent_start_dir
 
         self.mission = "simple env"
+
+    def step(
+            self, action: ActType
+    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+        self.step_count += 1
+
+        reward = 0
+        terminated = False
+        truncated = False
+
+        # Get the position in front of the agent
+        fwd_pos = self.front_pos
+
+        # Get the contents of the cell in front of the agent
+        fwd_cell = self.grid.get(*fwd_pos)
+
+        # Rotate left
+        if action == self.actions.left:
+            self.agent_dir -= 1
+            if self.agent_dir < 0:
+                self.agent_dir += 4
+
+        # Rotate right
+        elif action == self.actions.right:
+            self.agent_dir = (self.agent_dir + 1) % 4
+
+        # Move forward
+        elif action == self.actions.forward:
+            if fwd_cell is None or fwd_cell.can_overlap():
+                self.agent_pos = tuple(fwd_pos)
+            if fwd_cell is not None and fwd_cell.type == "goal":
+                terminated = True
+                reward = self._reward()
+            if fwd_cell is not None and fwd_cell.type == "lava":
+                terminated = True
+
+        else:
+            raise ValueError(f"Unknown action: {action}")
+
+        if self.step_count >= self.max_steps:
+            truncated = True
+
+        if self.render_mode == "human":
+            self.render()
+
+        obs = self.gen_obs()
+
+        reward *= 100  # modify reward to give stronger signal
+
+        return obs, reward, terminated, truncated, {}
 
 
 class DoorKeyEnv(MiniGridEnv):
@@ -434,7 +497,6 @@ class SpiralMaze(MiniGridEnv):
 class FlatObsWrapper(ObservationWrapper):
     # Transforms the observation into only the image component scaled to the grid size, and removes the colour component.
     # Still partially observable, direction component not included.
-    # Removes drop and done actions
 
     def __init__(self, env):
         super().__init__(env)
@@ -461,3 +523,42 @@ class FlatObsWrapper(ObservationWrapper):
         obs = new_grid.flatten()
 
         return obs
+
+
+class RGBImgPartialObsWrapper(ObservationWrapper):
+    """
+    Wrapper to use partially observable RGB image as observation.
+    This can be used to have the agent to solve the gridworld in pixel space.
+    """
+
+    def __init__(self, env, tile_size=8):
+        super().__init__(env)
+
+        # Rendering attributes for observations
+        self.tile_size = tile_size
+
+        obs_shape = env.observation_space.spaces["image"].shape
+        self.new_image_space = spaces.Box(
+            low=0,
+            high=255,
+            shape=(obs_shape[0] * tile_size, obs_shape[1] * tile_size, 3),
+            dtype="uint8",
+        )
+
+        self.observation_space = spaces.Dict(
+            {**self.observation_space.spaces, "image": self.new_image_space}
+        )
+
+        self.conv_model = Sequential([
+            Input(shape=self.new_image_space.shape),
+            Conv2D(config.mg_conv_layers[0], kernel_size=config.mg_kernel_size[0], strides=config.mg_strides[0], activation=config.mg_conv_hidden_activation),
+            Conv2D(config.mg_conv_layers[1], kernel_size=config.mg_kernel_size[1], strides=config.mg_strides[1], activation=config.mg_conv_hidden_activation),
+            Flatten()
+            ])
+
+    def observation(self, obs):
+        rgb_img_partial = self.get_frame(tile_size=self.tile_size, agent_pov=True) / 255
+        rgb_img_partial = rgb_img_partial[None, ...]
+        new_obs = self.conv_model(rgb_img_partial).numpy()[0]
+
+        return new_obs

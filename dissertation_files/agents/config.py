@@ -4,6 +4,13 @@ from keras import activations
 Minigrid Hyperparameters
 """
 
+#Conv
+
+mg_conv_layers = [32, 64]
+mg_kernel_size = [(8, 8), (4, 4)]
+mg_strides = [(4, 4), (2, 2)]
+mg_conv_hidden_activation = activations.relu
+
 mg_dqn_gamma = 0.95
 mg_dqn_memory_size = 10000
 mg_dqn_batch_size = 250
