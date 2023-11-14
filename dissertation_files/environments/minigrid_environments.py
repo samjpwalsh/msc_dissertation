@@ -149,7 +149,7 @@ class DoorKeyEnv(MiniGridEnv):
             size=15,
             agent_start_pos=(1, 1),
             agent_start_dir=0,
-            max_steps=2000,
+            max_steps=1000,
             **kwargs,
     ):
         self.agent_start_pos = agent_start_pos
@@ -254,6 +254,8 @@ class DoorKeyEnv(MiniGridEnv):
 
         obs = self.gen_obs()
 
+        reward *= 100  # modify reward to give stronger signal
+
         return obs, reward, terminated, truncated, {}
 
 class TwoRooms(MiniGridEnv):
@@ -262,7 +264,7 @@ class TwoRooms(MiniGridEnv):
             size=15,
             agent_start_pos=(7, 13),
             agent_start_dir=3,
-            max_steps=500,
+            max_steps=1000,
             **kwargs,
     ):
         self.agent_start_pos = agent_start_pos
@@ -366,6 +368,8 @@ class TwoRooms(MiniGridEnv):
             self.render()
 
         obs = self.gen_obs()
+
+        reward *= 100  # modify reward to give stronger signal
 
         return obs, reward, terminated, truncated, {}
 
@@ -531,8 +535,9 @@ class RGBImgPartialObsWrapper(ObservationWrapper):
     This can be used to have the agent to solve the gridworld in pixel space.
     """
 
-    def __init__(self, env, tile_size=8):
+    def __init__(self, env, seed=None, tile_size=8):
         super().__init__(env)
+        self.seed = seed
 
         # Rendering attributes for observations
         self.tile_size = tile_size
@@ -562,3 +567,46 @@ class RGBImgPartialObsWrapper(ObservationWrapper):
         new_obs = self.conv_model(rgb_img_partial).numpy()[0]
 
         return new_obs
+
+    def reset(self, seed=None):
+        return super().reset(seed=self.seed)
+
+    # def reset(
+    #     self,
+    #     *,
+    #     seed: int | None = None,
+    #     options: dict[str, Any] | None = None,
+    # ) -> tuple[ObsType, dict[str, Any]]:
+    #     super().reset(seed=self.seed)
+    #
+    #     # Reinitialize episode-specific variables
+    #     self.agent_pos = (-1, -1)
+    #     self.agent_dir = -1
+    #
+    #     # Generate a new random grid at the start of each episode
+    #     self._gen_grid(self.width, self.height)
+    #
+    #     # These fields should be defined by _gen_grid
+    #     assert (
+    #         self.agent_pos >= (0, 0)
+    #         if isinstance(self.agent_pos, tuple)
+    #         else all(self.agent_pos >= 0) and self.agent_dir >= 0
+    #     )
+    #
+    #     # Check that the agent doesn't overlap with an object
+    #     start_cell = self.grid.get(*self.agent_pos)
+    #     assert start_cell is None or start_cell.can_overlap()
+    #
+    #     # Item picked up, being carried, initially nothing
+    #     self.carrying = None
+    #
+    #     # Step count since episode start
+    #     self.step_count = 0
+    #
+    #     if self.render_mode == "human":
+    #         self.render()
+    #
+    #     # Return first observation
+    #     obs = self.gen_obs()
+    #
+    #     return obs, {}

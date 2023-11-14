@@ -1,10 +1,11 @@
+import pickle
+import seaborn as sns
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 # from gymnasium.utils.save_video import save_video
-from dissertation_files.agents.utils import save_video
-import seaborn as sns
-import pickle
+from dissertation_files.agents.utils import save_video, confidence_interval
+
 
 def run_random_evaluation(agent, eval_env, episodes, video_folder, current_epoch):
     eval_env.reset()
@@ -72,6 +73,8 @@ def run_ppo_evaluation(agent, eval_env, episodes, video_folder, current_epoch):
             total_reward += reward
             if truncated:
                 done = True
+            if done:
+                print(reward)
             observation = observation_new
         if episode == 0 and video_folder is not None:
             save_video(frames, video_folder, fps=eval_env.metadata["render_fps"],
@@ -173,12 +176,13 @@ def plot_evaluation_data(rewards, epochs, eval_frequency, steps_per_epoch, env_n
     step_list = [(i * steps_per_epoch * eval_frequency) for i in range((epochs // eval_frequency) + 1)]
     fig, ax = plt.subplots()
     for key in rewards.keys():
-        ave_reward = np.mean(np.array(rewards[key]), axis=0)
-        std_dev = np.std(np.array(rewards[key]), axis=0)
+        arr = np.array(rewards[key])
+        ave_reward = np.mean(arr, axis=0)
+        conf_ints = [confidence_interval(i) for i in arr.T]
         ax.plot(step_list, ave_reward, label=key)
         ax.fill_between(step_list,
-                        [ave_reward[i] - std_dev[i] for i in range(len(ave_reward))],
-                        [ave_reward[i] + std_dev[i] for i in range(len(ave_reward))],
+                        [ave_reward[i] - conf_ints[i] for i in range(len(ave_reward))],
+                        [ave_reward[i] + conf_ints[i] for i in range(len(ave_reward))],
                         alpha=0.2)
     plt.xlim(0, steps_per_epoch * epochs)
     plt.ylim(0, 1)
