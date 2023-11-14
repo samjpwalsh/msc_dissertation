@@ -25,6 +25,13 @@ def logprobabilities(logits, action, num_actions):
     )
     return logprobability
 
+def confidence_interval(data, conf=0.95):
+    n = len(data)
+    se = scipy.stats.sem(data)
+    h = se * scipy.stats.t.ppf((1 + conf) / 2, n-1)
+    return h
+
+
 # Code below is from https://gymnasium.farama.org/main/_modules/gymnasium/utils/save_video/ with small modifications
 
 def capped_cubic_video_schedule(episode_id: int) -> bool:
