@@ -220,7 +220,7 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
                 first_time_visits = None
 
             if done or (t == steps_per_epoch - 1):
-                last_value = agent.critic(observation.reshape(1, -1))  # 0 if done else
+                last_value = agent.critic(observation.reshape(1, -1))
                 agent.buffer.finish_trajectory(last_value)
 
             if done:
@@ -238,8 +238,7 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             observation_buffer,
             action_buffer,
             total_advantage_buffer,
-            intrinsic_reward_buffer,
-            extrinsic_reward_buffer,
+            total_return_buffer,
             logprobability_buffer,
         ) = agent.buffer.get()
 
@@ -247,7 +246,7 @@ def rnd_training_loop(epochs, agent, env, observation_dimensions, action_dimensi
             agent.train_actor(observation_buffer, action_buffer, logprobability_buffer, total_advantage_buffer)
 
         for _ in range(train_critic_iterations):
-            agent.train_critic(observation_buffer, extrinsic_reward_buffer)
+            agent.train_critic(observation_buffer, total_return_buffer)
 
         for _ in range(train_rnd_iterations):
             agent.train_rnd_predictor(observation_buffer)

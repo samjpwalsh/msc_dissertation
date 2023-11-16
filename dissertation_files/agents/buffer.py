@@ -116,6 +116,9 @@ class RNDBuffer:
         self.extrinsic_reward_buffer = np.zeros(size, dtype=np.float32)
         self.intrinsic_reward_buffer = np.zeros(size, dtype=np.float32)
         self.total_reward_buffer = np.zeros(size, dtype=np.float32)
+        self.extrinsic_return_buffer = np.zeros(size, dtype=np.float32)
+        self.intrinsic_return_buffer = np.zeros(size, dtype=np.float32)
+        self.total_return_buffer = np.zeros(size, dtype=np.float32)
         self.value_buffer = np.zeros(size, dtype=np.float32)
         self.logprobability_buffer = np.zeros(size, dtype=np.float32)
         self.gamma, self.lam = gamma, lam
@@ -133,60 +136,62 @@ class RNDBuffer:
 
     def finish_trajectory(self, last_value=0):
         path_slice = slice(self.trajectory_start_index, self.pointer)
-        extrinsic_rewards = np.append(self.extrinsic_reward_buffer[path_slice], last_value)
-        intrinsic_rewards = np.append(self.intrinsic_reward_buffer[path_slice], last_value)
+        extrinsic_rewards = np.append(self.extrinsic_reward_buffer[path_slice], last_value)  # episodic
+        intrinsic_rewards = np.append(self.intrinsic_reward_buffer[path_slice], 0)  # non-episodic
         values = np.append(self.value_buffer[path_slice], last_value)
 
-        # Extrinsic Rewards and Advantages
+        # Extrinsic Returns and Advantages
         ex_deltas = extrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
         self.extrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
             ex_deltas, self.gamma * self.lam
         )
-        self.extrinsic_reward_buffer[path_slice] = discounted_cumulative_sums(
+        self.extrinsic_return_buffer[path_slice] = discounted_cumulative_sums(
             extrinsic_rewards, self.gamma
         )[:-1]
 
-        # Intrinsic Rewards and Advantages
-        # Nomalize IRs
-
-        int_deltas = intrinsic_rewards[:-1] - intrinsic_rewards[1:]
-        self.intrinsic_advantage_buffer[path_slice] = int_deltas
-
-        ir_mean, ir_std = (
-            np.mean(intrinsic_rewards),
-            np.std(intrinsic_rewards),
+        # Intrinsic Returns and Advantages
+        int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
+        self.intrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
+            int_deltas, self.gamma * self.lam
         )
-        intrinsic_rewards = (intrinsic_rewards - ir_mean) / ir_std
-        self.intrinsic_reward_buffer[path_slice] = intrinsic_rewards[:-1]
-
-
-
-        # Overall Advantages
-
-        self.total_advantage_buffer[path_slice] = \
-            self.extrinsic_advantage_buffer[path_slice] + self.intrinsic_advantage_buffer[path_slice]
-
-        # Overall Rewards
-
-        self.total_reward_buffer[path_slice] = \
-            self.extrinsic_reward_buffer[path_slice] + self.intrinsic_reward_buffer[path_slice]
+        self.intrinsic_return_buffer[path_slice] = discounted_cumulative_sums(
+            intrinsic_rewards, self.gamma
+        )[:-1]
 
         self.trajectory_start_index = self.pointer
 
     def get(self):
-        # Get all data of the buffer, normalize the advantages
+
+        # Get all data of the buffer, combine int and ext returns and advantages
+
         self.pointer, self.trajectory_start_index = 0, 0
-        advantage_mean, advantage_std = (
-            np.mean(self.total_advantage_buffer),
-            np.std(self.total_advantage_buffer),
+
+        # Normalise intrinsic returns and advantages
+
+        int_rew_mean, int_rew_std = (
+                np.mean(self.intrinsic_return_buffer),
+                np.std(self.intrinsic_return_buffer),
+            )
+        self.intrinsic_return_buffer = (self.intrinsic_return_buffer - int_rew_mean) / int_rew_std
+
+        int_adv_mean, int_adv_std = (
+            np.mean(self.intrinsic_advantage_buffer),
+            np.std(self.intrinsic_advantage_buffer),
         )
-        self.total_advantage_buffer = (self.total_advantage_buffer - advantage_mean) / advantage_std
+        self.intrinsic_advantage_buffer = (self.intrinsic_advantage_buffer - int_adv_mean) / int_adv_std
+
+        # Overall Advantages
+
+        self.total_advantage_buffer = self.extrinsic_advantage_buffer + self.intrinsic_advantage_buffer
+
+        # Overall Returns
+
+        self.total_return_buffer = self.extrinsic_return_buffer + self.intrinsic_return_buffer
 
         return (
             self.observation_buffer,
             self.action_buffer,
             self.total_advantage_buffer,
-            self.intrinsic_reward_buffer,
-            self.extrinsic_reward_buffer,
+            self.total_return_buffer,
             self.logprobability_buffer
         )
