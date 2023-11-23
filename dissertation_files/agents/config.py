@@ -43,6 +43,7 @@ mg_rnd_rnd_predictor_learning_rate = 1e-4
 mg_rnd_clip_ratio = 0.2
 mg_rnd_gamma = 0.99
 mg_rnd_lam = 0.95 # 0.97
+mg_rnd_intrinsic_weight = 0.2
 mg_rnd_train_actor_iterations = 80
 mg_rnd_train_critic_iterations = 80
 mg_rnd_train_rnd_iterations = 80

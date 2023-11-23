@@ -19,9 +19,9 @@ Training & Evaluation Hyperparameters
 """
 
 STEPS_PER_EPOCH = 4000
-EPOCHS = 30
+EPOCHS = 100
 EVALUATION_FREQUENCY = 5  # 10
-EVALUATION_EPISODES_PER_EPOCH = 5  # 10
+EVALUATION_EPISODES_PER_EPOCH = 50  # 10
 EVALUATION_PIPELINE_RUNS = 1  # 10
 
 if __name__ == "__main__":
@@ -255,7 +255,8 @@ if __name__ == "__main__":
                          config.mg_rnd_rnd_predictor_learning_rate,
                          config.mg_rnd_clip_ratio,
                          config.mg_rnd_gamma,
-                         config.mg_rnd_lam)
+                         config.mg_rnd_lam,
+                         config.mg_rnd_intrinsic_weight)
 
         average_reward_list, _, first_time_visits = rnd_training_loop(
             EPOCHS,

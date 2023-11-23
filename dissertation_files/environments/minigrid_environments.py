@@ -380,7 +380,7 @@ class SpiralMaze(MiniGridEnv):
             size=15,
             agent_start_pos=(6, 1),
             agent_start_dir=1,
-            max_steps=1000,
+            max_steps=200,
             **kwargs,
     ):
         self.agent_start_pos = agent_start_pos
@@ -492,8 +492,6 @@ class SpiralMaze(MiniGridEnv):
             self.render()
 
         obs = self.gen_obs()
-
-        reward *= 100  # modify reward to give stronger signal
 
         return obs, reward, terminated, truncated, {}
 
@@ -639,6 +637,7 @@ class RGBImgPartialObsWrapper(ObservationWrapper):
     def __init__(self, env, seed=None, tile_size=8):
         super().__init__(env)
         self.seed = seed
+        tf.random.set_seed(1)
 
         # Rendering attributes for observations
         self.tile_size = tile_size

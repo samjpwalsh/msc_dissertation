@@ -86,13 +86,8 @@ class PPOBuffer:
         self.trajectory_start_index = self.pointer
 
     def get(self):
-        # Get all data of the buffer and normalize the advantages
         self.pointer, self.trajectory_start_index = 0, 0
-        advantage_mean, advantage_std = (
-            np.mean(self.advantage_buffer),
-            np.std(self.advantage_buffer),
-        )
-        self.advantage_buffer = (self.advantage_buffer - advantage_mean) / advantage_std
+
         return (
             self.observation_buffer,
             self.action_buffer,
@@ -104,7 +99,7 @@ class PPOBuffer:
 
 class RNDBuffer:
 
-    def __init__(self, observation_dimensions, size, gamma=0.99, lam=0.95):
+    def __init__(self, observation_dimensions, size, gamma=0.99, lam=0.95, intrinsic_weight=0.2):
         # Buffer initialization
         self.observation_buffer = np.zeros(
             (size, observation_dimensions), dtype=np.float32
@@ -122,6 +117,7 @@ class RNDBuffer:
         self.value_buffer = np.zeros(size, dtype=np.float32)
         self.logprobability_buffer = np.zeros(size, dtype=np.float32)
         self.gamma, self.lam = gamma, lam
+        self.intrinsic_weight = intrinsic_weight
         self.pointer, self.trajectory_start_index = 0, 0
 
     def store(self, observation, action, extrinsic_reward, intrinsic_reward, value, logprobability):
@@ -149,6 +145,7 @@ class RNDBuffer:
             extrinsic_rewards, self.gamma
         )[:-1]
 
+
         # Intrinsic Returns and Advantages
         int_deltas = intrinsic_rewards[:-1] + self.gamma * values[1:] - values[:-1]
         self.intrinsic_advantage_buffer[path_slice] = discounted_cumulative_sums(
@@ -162,7 +159,7 @@ class RNDBuffer:
 
     def get(self):
 
-        # Get all data of the buffer, combine int and ext returns and advantages
+        # Get all data of the buffer, normalise int returns and advs, combine int and ext returns and advantages
 
         self.pointer, self.trajectory_start_index = 0, 0
 
@@ -182,11 +179,13 @@ class RNDBuffer:
 
         # Overall Advantages
 
-        self.total_advantage_buffer = self.extrinsic_advantage_buffer + self.intrinsic_advantage_buffer
+        self.total_advantage_buffer = (self.extrinsic_advantage_buffer * (1 - self.intrinsic_weight)) + \
+                                      (self.intrinsic_advantage_buffer * self.intrinsic_weight)
 
         # Overall Returns
 
-        self.total_return_buffer = self.extrinsic_return_buffer + self.intrinsic_return_buffer
+        self.total_return_buffer = (self.extrinsic_return_buffer * (1 - self.intrinsic_weight)) + \
+                                   (self.intrinsic_return_buffer * self.intrinsic_weight)
 
         return (
             self.observation_buffer,
