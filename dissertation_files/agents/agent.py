@@ -157,13 +157,13 @@ class PPOAgent:
 class RNDAgent:
     def __init__(self, observation_dimensions, action_dimensions, memory_size, hidden_sizes, input_activation,
                  output_activation, actor_learning_rate, critic_learning_rate, rnd_predictor_learning_rate,
-                 clip_ratio, gamma, lam):
+                 clip_ratio, gamma, lam, intrinsic_weight):
 
         self.observation_dimensions = observation_dimensions
         self.action_dimensions = action_dimensions
         self.memory_size = memory_size
         self.clip_ratio = clip_ratio
-        self.buffer = RNDBuffer(observation_dimensions, memory_size, gamma, lam)
+        self.buffer = RNDBuffer(observation_dimensions, memory_size, gamma, lam, intrinsic_weight)
         self.actor, self.actor_optimiser = self.build_actor(
             hidden_sizes,
             input_activation,

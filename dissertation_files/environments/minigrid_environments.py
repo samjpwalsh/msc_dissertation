@@ -380,7 +380,7 @@ class SpiralMaze(MiniGridEnv):
             size=15,
             agent_start_pos=(6, 1),
             agent_start_dir=1,
-            max_steps=1000,
+            max_steps=200,
             **kwargs,
     ):
         self.agent_start_pos = agent_start_pos
@@ -493,9 +493,108 @@ class SpiralMaze(MiniGridEnv):
 
         obs = self.gen_obs()
 
-        reward *= 100  # modify reward to give stronger signal
-
         return obs, reward, terminated, truncated, {}
+
+
+class SparseLockedRooms(MiniGridEnv):
+    def __init__(
+            self,
+            size=10,
+            agent_start_pos=(7, 7),
+            agent_start_dir=3,
+            max_steps=300,
+            **kwargs,
+    ):
+        self.agent_start_pos = agent_start_pos
+        self.agent_start_dir = agent_start_dir
+
+        mission_space = MissionSpace(mission_func=self._gen_mission)
+
+        super().__init__(
+            mission_space=mission_space,
+            grid_size=size,
+            see_through_walls=False,
+            max_steps=max_steps,
+            **kwargs,
+        )
+
+    @staticmethod
+    def _gen_mission():
+        return "Sparse Reward - Locked Rooms"
+
+    def _gen_grid(self, width, height):
+
+        self.grid = Grid(width, height)
+        self.grid.wall_rect(0, 0, width, height)
+
+        for i in range(1, 5):
+            self.grid.set(4, i, Wall())
+            self.grid.set(i, 4, Wall())
+            self.grid.set(5, i, Wall())
+        for i in range(6, 9):
+            self.grid.set(i, 4, Wall())
+
+        self.grid.set(2, 4, Door(COLOR_NAMES[0], is_locked=True))
+        self.grid.set(7, 4, Door(COLOR_NAMES[1], is_locked=True))
+        self.grid.set(2, 7, Key(color=COLOR_NAMES[0]))
+        self.grid.set(2, 8, Key(color=COLOR_NAMES[1]))
+
+        self.put_obj(Goal(), 7, 2)
+
+        # Place the agent
+        self.agent_pos = self.agent_start_pos
+        self.agent_dir = self.agent_start_dir
+
+        self.mission = "Sparse Reward - Locked Rooms"
+
+
+class SparseSequentialRooms(MiniGridEnv):
+    def __init__(
+            self,
+            size=13,
+            agent_start_pos=(2, 2),
+            agent_start_dir=3,
+            max_steps=200,
+            **kwargs,
+    ):
+        self.agent_start_pos = agent_start_pos
+        self.agent_start_dir = agent_start_dir
+
+        mission_space = MissionSpace(mission_func=self._gen_mission)
+
+        super().__init__(
+            mission_space=mission_space,
+            grid_size=size,
+            see_through_walls=False,
+            max_steps=max_steps,
+            **kwargs,
+        )
+
+    @staticmethod
+    def _gen_mission():
+        return "parse Reward - Sequential Rooms"
+
+    def _gen_grid(self, width, height):
+
+        self.grid = Grid(width, height)
+        self.grid.wall_rect(0, 0, width, height)
+
+        for i in range(1, 4):
+            self.grid.set(4, i, Wall())
+            self.grid.set(8, i, Wall())
+        for i in range(0, 13):
+            self.grid.set(i, 4, Wall())
+
+        self.grid.set(4, 2, Door(COLOR_NAMES[0], is_locked=False))
+        self.grid.set(8, 3, Door(COLOR_NAMES[1], is_locked=False))
+
+        self.put_obj(Goal(), 11, 1)
+
+        # Place the agent
+        self.agent_pos = self.agent_start_pos
+        self.agent_dir = self.agent_start_dir
+
+        self.mission = "Sparse Reward - Sequential Rooms"
 
 
 class FlatObsWrapper(ObservationWrapper):
@@ -538,6 +637,7 @@ class RGBImgPartialObsWrapper(ObservationWrapper):
     def __init__(self, env, seed=None, tile_size=8):
         super().__init__(env)
         self.seed = seed
+        tf.random.set_seed(1)
 
         # Rendering attributes for observations
         self.tile_size = tile_size

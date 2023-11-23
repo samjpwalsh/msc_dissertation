@@ -73,8 +73,6 @@ def run_ppo_evaluation(agent, eval_env, episodes, video_folder, current_epoch):
             total_reward += reward
             if truncated:
                 done = True
-            if done:
-                print(reward)
             observation = observation_new
         if episode == 0 and video_folder is not None:
             save_video(frames, video_folder, fps=eval_env.metadata["render_fps"],
@@ -115,7 +113,7 @@ def run_rnd_evaluation(agent, eval_env, episodes, video_folder, current_epoch):
 
 
 def load_file_for_plot(environment, algorithm, obj, date):
-    with open(f'./test_data/{environment}/data/{algorithm}_{obj}_{date}.pkl', 'rb') as f:
+    with open(f'C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/{environment}/data/{algorithm}_{obj}_{date}.pkl', 'rb') as f:
         file = {algorithm: pickle.load(f)}
     return file
 
@@ -168,7 +166,7 @@ def plot_exploration_heatmap(gridworld_env, first_time_visits, epochs, steps_per
     sns.heatmap(df, vmin=0, vmax=epochs*steps_per_epoch, cmap=cmap, xticklabels=False, yticklabels=False,
                 cbar_kws={'label': 'Training Steps'})
     plt.title(f"Exploration heatmap - {algorithm}")
-    plt.savefig(f'./test_data/{env_name}/plots/{algorithm}_heatmap')
+    plt.savefig(f'C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/{env_name}/plots/{algorithm}_heatmap')
     plt.show()
 
 
@@ -190,7 +188,7 @@ def plot_evaluation_data(rewards, epochs, eval_frequency, steps_per_epoch, env_n
     plt.xlabel("Training Steps")
     plt.title("Average reward after training for x steps")
     ax.legend(loc='upper left')
-    plt.savefig(f'./test_data/{env_name}/plots/extrinsic_rewards')
+    plt.savefig(f'C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/{env_name}/plots/extrinsic_rewards')
     plt.show()
 
 
@@ -212,5 +210,5 @@ def plot_state_visit_percentage(gridworld_env, first_time_visits, epochs, steps_
     plt.ylim(0, 100)
     ax.legend(loc='lower right')
     plt.title("Percentage of the environment explored throughout training")
-    plt.savefig(f'./test_data/{env_name}/plots/state_visit_percentage')
+    plt.savefig(f'C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/{env_name}/plots/state_visit_percentage')
     plt.show()
