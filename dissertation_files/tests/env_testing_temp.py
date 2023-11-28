@@ -19,8 +19,8 @@ EPOCHS = 30
 Environment Set Up
 """
 
-env = SparseSequentialRooms(render_mode="human")
-env = RGBImgPartialObsWrapper(env)
+env = gym.make("MiniGrid-MultiRoom-N6-v0", render_mode="human")
+env = RGBImgPartialObsWrapper(env, seed=1)
 
 observation_dimensions = len(env.reset()[0])
 action_dimensions = env.action_space.n
