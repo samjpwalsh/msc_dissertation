@@ -19,7 +19,7 @@ EPOCHS = 30
 Environment Set Up
 """
 
-env = gym.make("MiniGrid-MultiRoom-N6-v0", render_mode="human")
+env = gym.make("MiniGrid-KeyCorridorS5R3", render_mode="human")
 env = RGBImgPartialObsWrapper(env, seed=1)
 
 observation_dimensions = len(env.reset()[0])

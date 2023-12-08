@@ -517,9 +517,6 @@ class DoubleSpiralMaze(MiniGridEnv):
             **kwargs,
         )
 
-        self.actions = SpiralMazeActions
-        self.action_space = spaces.Discrete(len(self.actions))
-
     @staticmethod
     def _gen_mission():
         return "double spiral maze"
@@ -531,7 +528,7 @@ class DoubleSpiralMaze(MiniGridEnv):
         # Generate the surrounding walls
         self.grid.wall_rect(0, 0, width, height)
         for i in range(1, 20):
-            for j in range(1, 4):
+            for j in range(1, 5):
                 self.grid.set(i, j, Wall())
             for j in range(15, 20):
                 self.grid.set(i, j, Wall())
@@ -571,54 +568,97 @@ class DoubleSpiralMaze(MiniGridEnv):
 
         self.mission = "double spiral maze"
 
-    def step(
-            self, action: ActType
-    ) -> tuple[ObsType, SupportsFloat, bool, bool, dict[str, Any]]:
-        self.step_count += 1
+class QuadSpiralMaze(MiniGridEnv):
+    def __init__(
+            self,
+            size=21,
+            agent_start_pos=(10, 10),
+            agent_start_dir=1,
+            max_steps=200,
+            **kwargs,
+    ):
+        self.agent_start_pos = agent_start_pos
+        self.agent_start_dir = agent_start_dir
 
-        reward = 0
-        terminated = False
-        truncated = False
+        mission_space = MissionSpace(mission_func=self._gen_mission)
 
-        # Get the position in front of the agent
-        fwd_pos = self.front_pos
+        super().__init__(
+            mission_space=mission_space,
+            grid_size=size,
+            see_through_walls=False,
+            max_steps=max_steps,
+            **kwargs,
+        )
 
-        # Get the contents of the cell in front of the agent
-        fwd_cell = self.grid.get(*fwd_pos)
+    @staticmethod
+    def _gen_mission():
+        return "quad spiral maze"
 
-        # Rotate left
-        if action == self.actions.left:
-            self.agent_dir -= 1
-            if self.agent_dir < 0:
-                self.agent_dir += 4
+    def _gen_grid(self, width, height):
+        # Create an empty grid
+        self.grid = Grid(width, height)
 
-        # Rotate right
-        elif action == self.actions.right:
-            self.agent_dir = (self.agent_dir + 1) % 4
+        # Generate the surrounding walls
+        self.grid.wall_rect(0, 0, width, height)
 
-        # Move forward
-        elif action == self.actions.forward:
-            if fwd_cell is None or fwd_cell.can_overlap():
-                self.agent_pos = tuple(fwd_pos)
-            if fwd_cell is not None and fwd_cell.type == "goal":
-                terminated = True
-                reward = self._reward()
-            if fwd_cell is not None and fwd_cell.type == "lava":
-                terminated = True
+        # build the spirals
+        for i in range(2, 19):
+            self.grid.set(i, 11, Wall())
+            self.grid.set(i, 9, Wall())
+        for j in range(11, 19):
+            self.grid.set(2, j, Wall())
+            self.grid.set(18, j, Wall())
+        for j in range(2, 10):
+            self.grid.set(2, j, Wall())
+            self.grid.set(18, j, Wall())
+        for i in range(2, 9):
+            self.grid.set(i, 18, Wall())
+            self.grid.set(i, 2, Wall())
+        for i in range(12, 19):
+            self.grid.set(i, 18, Wall())
+            self.grid.set(i, 2, Wall())
+        for j in range(13, 18):
+            self.grid.set(8, j, Wall())
+            self.grid.set(12, j, Wall())
+        for j in range(2, 8):
+            self.grid.set(8, j, Wall())
+            self.grid.set(12, j, Wall())
+        for i in range(4, 8):
+            self.grid.set(i, 13, Wall())
+        for i in range(13, 17):
+            self.grid.set(i, 13, Wall())
+        for i in range(4, 8):
+            self.grid.set(i, 7, Wall())
+        for i in range(13, 17):
+            self.grid.set(i, 7, Wall())
+        for j in range(14, 17):
+            self.grid.set(4, j, Wall())
+            self.grid.set(16, j, Wall())
+        for j in range(4, 7):
+            self.grid.set(4, j, Wall())
+            self.grid.set(16, j, Wall())
+        for i in range(5, 7):
+            self.grid.set(i, 16, Wall())
+        for i in range(14, 16):
+            self.grid.set(i, 16, Wall())
+        for i in range(5, 7):
+            self.grid.set(i, 4, Wall())
+        for i in range(14, 16):
+            self.grid.set(i, 4, Wall())
+        self.grid.set(6, 15, Wall())
+        self.grid.set(14, 15, Wall())
+        self.grid.set(6, 5, Wall())
+        self.grid.set(14, 5, Wall())
+        for j in range(1, 9):
+            self.grid.set(10, j, Wall())
+        for j in range(12, 20):
+            self.grid.set(10, j, Wall())
 
-        else:
-            raise ValueError(f"Unknown action: {action}")
+        # Place the agent
+        self.agent_pos = self.agent_start_pos
+        self.agent_dir = self.agent_start_dir
 
-        if self.step_count >= self.max_steps:
-            truncated = True
-
-        if self.render_mode == "human":
-            self.render()
-
-        obs = self.gen_obs()
-
-        return obs, reward, terminated, truncated, {}
-
+        self.mission = "quad spiral maze"
 
 class SparseLockedRooms(MiniGridEnv):
     def __init__(
