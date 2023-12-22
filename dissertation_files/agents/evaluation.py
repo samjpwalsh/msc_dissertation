@@ -176,12 +176,15 @@ def plot_evaluation_data(rewards, epochs, eval_frequency, steps_per_epoch, env_n
     for key in rewards.keys():
         arr = np.array(rewards[key])
         ave_reward = np.mean(arr, axis=0)
-        conf_ints = [confidence_interval(i) for i in arr.T]
-        ax.plot(step_list, ave_reward, label=key)
-        ax.fill_between(step_list,
-                        [ave_reward[i] - conf_ints[i] for i in range(len(ave_reward))],
-                        [ave_reward[i] + conf_ints[i] for i in range(len(ave_reward))],
-                        alpha=0.2)
+        if arr.ndim == 1:
+            ax.plot(step_list, arr, label=key)
+        else:
+            ax.plot(step_list, ave_reward, label=key)
+            conf_ints = [confidence_interval(i) for i in arr.T]
+            ax.fill_between(step_list,
+                            [ave_reward[i] - conf_ints[i] for i in range(len(ave_reward))],
+                            [ave_reward[i] + conf_ints[i] for i in range(len(ave_reward))],
+                            alpha=0.2)
     plt.xlim(0, steps_per_epoch * epochs)
     plt.ylim(0, 1)
     plt.ylabel("Average Extrinsic Reward")

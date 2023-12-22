@@ -736,7 +736,7 @@ class SparseSequentialRooms(MiniGridEnv):
 
     @staticmethod
     def _gen_mission():
-        return "parse Reward - Sequential Rooms"
+        return "Sparse Reward - Sequential Rooms"
 
     def _gen_grid(self, width, height):
 
@@ -760,6 +760,79 @@ class SparseSequentialRooms(MiniGridEnv):
 
         self.mission = "Sparse Reward - Sequential Rooms"
 
+class MultiroomFourRooms(MiniGridEnv):
+
+    def __init__(
+            self,
+            size=25,
+            agent_start_pos=(8, 1),
+            agent_start_dir=1,
+            max_steps=100,
+            **kwargs,
+    ):
+        self.agent_start_pos = agent_start_pos
+        self.agent_start_dir = agent_start_dir
+
+        mission_space = MissionSpace(mission_func=self._gen_mission)
+
+        super().__init__(
+            mission_space=mission_space,
+            grid_size=size,
+            see_through_walls=False,
+            max_steps=max_steps,
+            **kwargs,
+        )
+
+    @staticmethod
+    def _gen_mission():
+        return "Generalisation - Multiroom"
+
+    def _gen_grid(self, width, height):
+
+        self.grid = Grid(width, height)
+
+        # Room 1
+        for i in range(3, 10):
+            self.grid.set(i, 0, Wall())
+            self.grid.set(i, 5, Wall())
+        for j in range(1, 6):
+            self.grid.set(3, j, Wall())
+            self.grid.set(9, j, Wall())
+
+        # Room 2
+        for i in range(9, 14):
+            self.grid.set(i, 2, Wall())
+            self.grid.set(i, 6, Wall())
+        for j in range(2, 7):
+            self.grid.set(9, j, Wall())
+            self.grid.set(13, j, Wall())
+
+        # Room 3
+        for i in range(14, 22):
+            self.grid.set(i, 3, Wall())
+            self.grid.set(i, 7, Wall())
+        for j in range(3, 8):
+            self.grid.set(13, j, Wall())
+            self.grid.set(21, j, Wall())
+
+        # Room 4
+        for i in range(15, 19):
+            self.grid.set(i, 14, Wall())
+        for j in range(8, 15):
+            self.grid.set(15, j, Wall())
+            self.grid.set(18, j, Wall())
+
+        self.grid.set(9, 3, Door(COLOR_NAMES[3], is_locked=False))
+        self.grid.set(13, 5, Door(COLOR_NAMES[4], is_locked=False))
+        self.grid.set(17, 7, Door(COLOR_NAMES[0], is_locked=False))
+
+        self.put_obj(Goal(), 16, 13)
+
+        # Place the agent
+        self.agent_pos = self.agent_start_pos
+        self.agent_dir = self.agent_start_dir
+
+        self.mission = "Generalisation - Multiroom"
 
 class FlatObsWrapper(ObservationWrapper):
     # Transforms the observation into only the image component scaled to the grid size, and removes the colour component.
