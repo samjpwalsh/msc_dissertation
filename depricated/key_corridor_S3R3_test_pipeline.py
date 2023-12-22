@@ -223,10 +223,10 @@ if __name__ == "__main__":
         else:
             ftvs[key] = np.mean(ftvs[key])
 
-    with open(rf'../test_data/sparse_key_corridor_S3R3/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'../test_data/deprecated/sparse_key_corridor_S3R3/data/ppo_rewards_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(rewards, f)
 
-    with open(rf'../test_data/sparse_key_corridor_S3R3/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
+    with open(rf'../test_data/deprecated/sparse_key_corridor_S3R3/data/ppo_ftvs_{dt.date.today()}.pkl', 'wb+') as f:
         pickle.dump(ftvs, f)
 
     # """

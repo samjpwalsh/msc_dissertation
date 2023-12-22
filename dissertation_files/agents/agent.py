@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import os
 import tensorflow as tf
 from tensorflow import keras
 from keras.models import clone_model
@@ -65,7 +66,7 @@ class DQNAgent:
         with tf.GradientTape() as tape:
             q_values = self.model(observations)
             q_values_actions = tf.reduce_sum(q_values * tf.one_hot(actions, self.action_dimensions), axis=1)
-            loss = tf.losses.huber(targets, q_values_actions) #tf.reduce_mean(tf.square(targets - q_values_actions))
+            loss = tf.losses.huber(targets, q_values_actions)
 
         gradients = tape.gradient(loss, self.model.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
@@ -263,3 +264,61 @@ class RNDAgent:
             rnd_loss = tf.reduce_mean((self.rnd_target(observation_buffer) - self.rnd_predictor(observation_buffer)) ** 2)
         rnd_grads = tape.gradient(rnd_loss, self.rnd_predictor.trainable_variables)
         self.rnd_predictor_optimiser.apply_gradients(zip(rnd_grads, self.rnd_predictor.trainable_variables))
+
+    def save_models(self, filepath):
+        actor_model_prefix = os.path.join(filepath, "actor_model/ckpt")
+        actor_optimiser_prefix = os.path.join(filepath, "actor_optimiser/ckpt")
+        critic_model_prefix = os.path.join(filepath, "critic_model/ckpt")
+        critic_optimiser_prefix = os.path.join(filepath, "actor_optimiser/ckpt")
+        rnd_predictor_model_prefix = os.path.join(filepath, "rnd_predictor_model/ckpt")
+        rnd_predictor_optimiser_prefix = os.path.join(filepath, "rnd_predictor_optimiser/ckpt")
+        rnd_target_model_prefix = os.path.join(filepath, "rnd_target_model/ckpt")
+
+        actor_model_checkpoint = tf.train.Checkpoint(model=self.actor)
+        actor_optimiser_checkpoint = tf.train.Checkpoint(optimiser=self.actor_optimiser)
+        critic_model_checkpoint = tf.train.Checkpoint(model=self.critic)
+        critic_optimiser_checkpoint = tf.train.Checkpoint(optimiser=self.critic_optimiser)
+        rnd_predictor_model_checkpoint = tf.train.Checkpoint(model=self.rnd_predictor)
+        rnd_predictor_optimiser_checkpoint = tf.train.Checkpoint(optimiser=self.rnd_predictor_optimiser)
+        rnd_target_model_checkpoint = tf.train.Checkpoint(model=self.rnd_target)
+
+        actor_model_checkpoint.save(file_prefix=actor_model_prefix)
+        actor_optimiser_checkpoint.save(file_prefix=actor_optimiser_prefix)
+        critic_model_checkpoint.save(file_prefix=critic_model_prefix)
+        critic_optimiser_checkpoint.save(file_prefix=critic_optimiser_prefix)
+        rnd_predictor_model_checkpoint.save(file_prefix=rnd_predictor_model_prefix)
+        rnd_predictor_optimiser_checkpoint.save(file_prefix=rnd_predictor_optimiser_prefix)
+        rnd_target_model_checkpoint.save(file_prefix=rnd_target_model_prefix)
+
+
+class PretrainedRNDAgent(RNDAgent):
+
+    def __init__(self, observation_dimensions, action_dimensions, memory_size, hidden_sizes, input_activation,
+                 output_activation, actor_learning_rate, critic_learning_rate, rnd_predictor_learning_rate, clip_ratio,
+                 gamma, lam, intrinsic_weight, checkpoint_filepath, restore_rnd_networks=True):
+
+        super().__init__(observation_dimensions, action_dimensions, memory_size, hidden_sizes, input_activation,
+                         output_activation, actor_learning_rate, critic_learning_rate, rnd_predictor_learning_rate,
+                         clip_ratio, gamma, lam, intrinsic_weight)
+
+        actor_model_prefix = os.path.join(checkpoint_filepath, "actor_model/ckpt-1")
+        critic_model_prefix = os.path.join(checkpoint_filepath, "critic_model/ckpt-1")
+
+        actor_model_checkpoint = tf.train.Checkpoint(model=self.actor)
+        critic_model_checkpoint = tf.train.Checkpoint(model=self.critic)
+
+        actor_model_checkpoint.restore(actor_model_prefix)
+        critic_model_checkpoint.restore(critic_model_prefix)
+
+        if restore_rnd_networks:
+            rnd_predictor_model_prefix = os.path.join(checkpoint_filepath, "rnd_predictor_model/ckpt-1")
+            rnd_predictor_optimiser_prefix = os.path.join(checkpoint_filepath, "rnd_predictor_optimiser/ckpt-1")
+            rnd_target_model_prefix = os.path.join(checkpoint_filepath, "rnd_target_model/ckpt-1")
+
+            rnd_predictor_model_checkpoint = tf.train.Checkpoint(model=self.rnd_predictor)
+            rnd_predictor_optimiser_checkpoint = tf.train.Checkpoint(optimiser=self.rnd_predictor_optimiser)
+            rnd_target_model_checkpoint = tf.train.Checkpoint(model=self.rnd_target)
+
+            rnd_predictor_model_checkpoint.restore(rnd_predictor_model_prefix)
+            rnd_predictor_optimiser_checkpoint.restore(rnd_predictor_optimiser_prefix)
+            rnd_target_model_checkpoint.restore(rnd_target_model_prefix)
