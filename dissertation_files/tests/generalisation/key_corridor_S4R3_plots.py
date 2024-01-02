@@ -15,17 +15,22 @@ EVALUATION_FREQUENCY = key_corridor_S4R3_test_pipeline.EVALUATION_FREQUENCY
 Load data
 """
 
-rnd_rewards = load_file_for_plot('generalisation_key_corridor_S4R3', 'rnd', 'rewards', '2023-12-21')
-rnd_ftvs = load_file_for_plot('generalisation_key_corridor_S4R3', 'rnd', 'ftvs', '2023-12-21')
+rnd_no_pretraining_rewards = load_file_for_plot('generalisation_key_corridor_S4R3_no_pretrain', 'rnd', 'rewards', '2023-12-30')
+rnd_pretraining_rewards = load_file_for_plot('generalisation_key_corridor_S4R3', 'rnd', 'rewards', '2023-12-21')
+
+rnd_no_pretraining_ftvs = load_file_for_plot('generalisation_key_corridor_S4R3_no_pretrain', 'rnd', 'ftvs', '2023-12-30')
+rnd_pretraining_ftvs = load_file_for_plot('generalisation_key_corridor_S4R3', 'rnd', 'ftvs', '2023-12-21')
 
 """
 Reward
 """
 
-plot_evaluation_data(rnd_rewards, EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH, 'generalisation_key_corridor_S4R3')
+rewards = rnd_pretraining_rewards | rnd_no_pretraining_rewards
+plot_evaluation_data(rnd_no_pretraining_rewards, EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH, 'generalisation_key_corridor_S4R3_no_pretrain')
 
 """
 Heatmaps
 """
 
-plot_exploration_heatmap(env, rnd_ftvs, EPOCHS, STEPS_PER_EPOCH, 'generalisation_key_corridor_S4R3')
+plot_exploration_heatmap(env, rnd_no_pretraining_ftvs, EPOCHS, STEPS_PER_EPOCH, 'generalisation_key_corridor_S4R3_no_pretrain')
+plot_exploration_heatmap(env, rnd_pretraining_ftvs, EPOCHS, STEPS_PER_EPOCH, 'generalisation_key_corridor_S4R3')

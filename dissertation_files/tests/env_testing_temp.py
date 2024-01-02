@@ -19,8 +19,8 @@ EPOCHS = 30
 Environment Set Up
 """
 
-env = gym.make("MiniGrid-KeyCorridorS3R3", render_mode='human')
-env = RGBImgPartialObsWrapper(env, seed=1)
+env = MultiroomFourRooms(render_mode='human')
+env = RGBImgPartialObsWrapper(env)
 
 env.reset()
 
