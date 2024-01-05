@@ -3,7 +3,6 @@ import tensorflow as tf
 from keras import layers
 import os
 from typing import Callable, Optional
-import gymnasium as gym
 from gymnasium import logger
 from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
 
@@ -18,7 +17,7 @@ def mlp(x, sizes, activation, output_activation=None):
     return layers.Dense(units=sizes[-1], activation=output_activation)(x)
 
 def logprobabilities(logits, action, num_actions):
-    # Compute the log-probabilities of taking actions a by using the logits (i.e. the output of the actor)
+    # Compute the log-probabilities of taking actions by using the logits (i.e. the output of the actor)
     logprobabilities_all = tf.nn.log_softmax(logits)
     logprobability = tf.reduce_sum(
         tf.one_hot(action, num_actions) * logprobabilities_all, axis=1

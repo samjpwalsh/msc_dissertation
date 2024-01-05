@@ -8,8 +8,6 @@ from dissertation_files.agents.buffer import DQNBuffer, PPOBuffer, RNDBuffer
 from dissertation_files.agents.utils import mlp, logprobabilities
 
 
-
-
 class RandomAgent:
     def __init__(self, action_dimensions):
         self.action_dimensions = action_dimensions
@@ -43,13 +41,11 @@ class DQNAgent:
         target_model = clone_model(self.model)
         return target_model
 
-
     def sample_action(self, observation):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_dimensions)
         else:
             return np.argmax(self.model(observation)[0])
-
 
     def train_model(self):
         if self.buffer.pointer < self.buffer.batch_size:

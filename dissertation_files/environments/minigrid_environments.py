@@ -46,7 +46,6 @@ class SimpleEnvActions(IntEnum):
     right = 1
     forward = 2
 
-
 class SimpleEnv(MiniGridEnv):
     def __init__(
             self,
@@ -866,10 +865,6 @@ class FlatObsWrapper(ObservationWrapper):
 
 
 class RGBImgPartialObsWrapper(ObservationWrapper):
-    """
-    Wrapper to use partially observable RGB image as observation.
-    This can be used to have the agent to solve the gridworld in pixel space.
-    """
 
     def __init__(self, env, seed=None, tile_size=8):
         super().__init__(env)

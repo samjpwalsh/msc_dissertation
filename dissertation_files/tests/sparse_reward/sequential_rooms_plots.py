@@ -1,8 +1,6 @@
-from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
-    plot_state_visit_percentage, load_file_for_plot
-from dissertation_files.environments.minigrid_environments import SparseSequentialRooms, FlatObsWrapper, RGBImgPartialObsWrapper
+from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, load_file_for_plot
+from dissertation_files.environments.minigrid_environments import SparseSequentialRooms, RGBImgPartialObsWrapper
 import sequential_rooms_test_pipeline
-import gymnasium as gym
 
 env = SparseSequentialRooms(render_mode='rgb_array')
 env = RGBImgPartialObsWrapper(env)
@@ -31,13 +29,6 @@ Reward
 
 rewards = random_rewards | dqn_rewards | ppo_rewards | rnd_rewards
 plot_evaluation_data(rewards, EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH, 'sparse_sequential_rooms')
-
-"""
-State visit %
-"""
-
-ftvs = random_ftvs | dqn_ftvs | ppo_ftvs | rnd_ftvs
-plot_state_visit_percentage(env, ftvs, EPOCHS, STEPS_PER_EPOCH, 'sparse_sequential_rooms')
 
 """
 Heatmaps

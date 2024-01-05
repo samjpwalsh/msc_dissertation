@@ -5,7 +5,7 @@ from dissertation_files.agents.utils import discounted_cumulative_sums
 class DQNBuffer:
 
     def __init__(self, observation_dimensions, size, batch_size):
-        # Buffer initialization
+
         self.observation_buffer = np.zeros(
             (size, observation_dimensions), dtype=np.float32
         )
@@ -46,7 +46,7 @@ class DQNBuffer:
 class PPOBuffer:
 
     def __init__(self, observation_dimensions, size, gamma, lam):
-        # Buffer initialization
+
         self.observation_buffer = np.zeros(
             (size, observation_dimensions), dtype=np.float32
         )
@@ -60,7 +60,7 @@ class PPOBuffer:
         self.pointer, self.trajectory_start_index = 0, 0
 
     def store(self, observation, action, reward, value, logprobability):
-        # Append one step of agent-environment interaction
+
         self.observation_buffer[self.pointer] = observation
         self.action_buffer[self.pointer] = action
         self.reward_buffer[self.pointer] = reward
@@ -69,7 +69,7 @@ class PPOBuffer:
         self.pointer += 1
 
     def finish_trajectory(self, last_value=0):
-        # Finish the trajectory by computing advantage estimates and rewards-to-go
+
         path_slice = slice(self.trajectory_start_index, self.pointer)
         rewards = np.append(self.reward_buffer[path_slice], last_value)
         values = np.append(self.value_buffer[path_slice], last_value)
@@ -100,7 +100,7 @@ class PPOBuffer:
 class RNDBuffer:
 
     def __init__(self, observation_dimensions, size, gamma=0.99, lam=0.95, intrinsic_weight=0.2):
-        # Buffer initialization
+
         self.observation_buffer = np.zeros(
             (size, observation_dimensions), dtype=np.float32
         )
@@ -121,7 +121,7 @@ class RNDBuffer:
         self.pointer, self.trajectory_start_index = 0, 0
 
     def store(self, observation, action, extrinsic_reward, intrinsic_reward, value, logprobability):
-        # Append one step of agent-environment interaction
+
         self.observation_buffer[self.pointer] = observation
         self.action_buffer[self.pointer] = action
         self.extrinsic_reward_buffer[self.pointer] = extrinsic_reward

@@ -1,6 +1,5 @@
-from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
-    plot_state_visit_percentage, load_file_for_plot
-from dissertation_files.environments.minigrid_environments import SparseSequentialRooms, FlatObsWrapper, RGBImgPartialObsWrapper
+from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, load_file_for_plot
+from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper
 import key_corridor_S3R3_pretraining
 import gymnasium as gym
 

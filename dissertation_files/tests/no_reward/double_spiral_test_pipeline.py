@@ -1,14 +1,11 @@
-import numpy as np
 import warnings
 import os
 import pickle
-import gymnasium as gym
 import datetime as dt
 from dissertation_files.agents import config
 from dissertation_files.agents.agent import RandomAgent, DQNAgent, PPOAgent, RNDAgent
 from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper, DoubleSpiralMaze
 from dissertation_files.agents.training import random_play_loop, dqn_training_loop, ppo_training_loop, rnd_training_loop
-from dissertation_files.agents.evaluation import get_all_visitable_cells
 
 
 warnings.filterwarnings("ignore")
@@ -20,7 +17,7 @@ Training & Evaluation Hyperparameters
 
 STEPS_PER_EPOCH = 4000
 EPOCHS = 200
-EVALUATION_PIPELINE_RUNS = 3
+EVALUATION_PIPELINE_RUNS = 10
 
 if __name__ == "__main__":
 
@@ -141,43 +138,43 @@ if __name__ == "__main__":
         env.reset()
         print("=============================================")
 
-    # """
-    # RND
-    # """
-    #
-    # for i in range(EVALUATION_PIPELINE_RUNS):
-    #     print(f"RND Agent Run {i+1}")
-    #
-    #     agent = RNDAgent(observation_dimensions,
-    #                      action_dimensions,
-    #                      STEPS_PER_EPOCH,
-    #                      config.mg_rnd_hidden_sizes,
-    #                      config.mg_rnd_input_activation,
-    #                      config.mg_rnd_output_activation,
-    #                      config.mg_rnd_actor_learning_rate,
-    #                      config.mg_rnd_critic_learning_rate,
-    #                      config.mg_rnd_rnd_predictor_learning_rate,
-    #                      config.mg_rnd_clip_ratio,
-    #                      config.mg_rnd_gamma,
-    #                      config.mg_rnd_lam,
-    #                      config.mg_rnd_intrinsic_weight)
-    #
-    #     _, _, first_time_visits = rnd_training_loop(
-    #         EPOCHS,
-    #         agent,
-    #         env,
-    #         observation_dimensions,
-    #         action_dimensions,
-    #         STEPS_PER_EPOCH,
-    #         config.mg_rnd_train_actor_iterations,
-    #         config.mg_rnd_train_critic_iterations,
-    #         config.mg_rnd_train_rnd_iterations,
-    #         video_folder=None,
-    #         eval_env=None
-    #     )
-    #
-    #     with open(rf'../test_data/no_double_spiral/data/rnd_ftvs_{dt.date.today()}_run_{i+1}.pkl', 'wb+') as f:
-    #         pickle.dump(first_time_visits, f)
-    #
-    #     env.reset()
-    #     print("=============================================")
+    """
+    RND
+    """
+
+    for i in range(EVALUATION_PIPELINE_RUNS):
+        print(f"RND Agent Run {i+1}")
+
+        agent = RNDAgent(observation_dimensions,
+                         action_dimensions,
+                         STEPS_PER_EPOCH,
+                         config.mg_rnd_hidden_sizes,
+                         config.mg_rnd_input_activation,
+                         config.mg_rnd_output_activation,
+                         config.mg_rnd_actor_learning_rate,
+                         config.mg_rnd_critic_learning_rate,
+                         config.mg_rnd_rnd_predictor_learning_rate,
+                         config.mg_rnd_clip_ratio,
+                         config.mg_rnd_gamma,
+                         config.mg_rnd_lam,
+                         config.mg_rnd_intrinsic_weight)
+
+        _, _, first_time_visits = rnd_training_loop(
+            EPOCHS,
+            agent,
+            env,
+            observation_dimensions,
+            action_dimensions,
+            STEPS_PER_EPOCH,
+            config.mg_rnd_train_actor_iterations,
+            config.mg_rnd_train_critic_iterations,
+            config.mg_rnd_train_rnd_iterations,
+            video_folder=None,
+            eval_env=None
+        )
+
+        with open(rf'../test_data/no_double_spiral/data/rnd_ftvs_{dt.date.today()}_run_{i+1}.pkl', 'wb+') as f:
+            pickle.dump(first_time_visits, f)
+
+        env.reset()
+        print("=============================================")

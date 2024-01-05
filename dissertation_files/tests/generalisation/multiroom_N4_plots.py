@@ -1,8 +1,6 @@
-from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
-    plot_state_visit_percentage, load_file_for_plot
-from dissertation_files.environments.minigrid_environments import SparseSequentialRooms, FlatObsWrapper, RGBImgPartialObsWrapper, MultiroomFourRooms
+from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, load_file_for_plot
+from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper, MultiroomFourRooms
 import multiroom_N4_pretraining
-import gymnasium as gym
 
 env = MultiroomFourRooms(render_mode='rgb_array')
 env = RGBImgPartialObsWrapper(env)

@@ -1,6 +1,5 @@
-from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
-    plot_state_visit_percentage, load_file_for_plot
-from dissertation_files.environments.minigrid_environments import SparseSequentialRooms, FlatObsWrapper, RGBImgPartialObsWrapper
+from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, load_file_for_plot
+from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper
 import multiroom_N6_test_pipeline
 import gymnasium as gym
 
@@ -17,7 +16,7 @@ Load data
 
 rnd_pretraining_rewards = load_file_for_plot('generalisation_multiroom_N6', 'rnd', 'rewards', '2023-12-22')
 rnd_no_pretraining_rewards = load_file_for_plot('generalisation_multiroom_N6_no_pretrain', 'rnd_no_pretrain', 'rewards', '2023-12-22')
-# rnd_ftvs = load_file_for_plot('generalisation_multiroom_N6', 'rnd', 'ftvs', '2023-12-22')
+rnd_ftvs = load_file_for_plot('generalisation_multiroom_N6', 'rnd', 'ftvs', '2023-12-22')
 rnd_no_pretraining_ftvs = load_file_for_plot('generalisation_multiroom_N6_no_pretrain', 'rnd_no_pretrain', 'ftvs', '2023-12-22')
 
 """
@@ -31,4 +30,5 @@ plot_evaluation_data(rewards, EPOCHS, EVALUATION_FREQUENCY, STEPS_PER_EPOCH, 'ge
 Heatmaps
 """
 
+plot_exploration_heatmap(env, rnd_ftvs, EPOCHS, STEPS_PER_EPOCH, 'generalisation_multiroom_N6')
 plot_exploration_heatmap(env, rnd_no_pretraining_ftvs, EPOCHS, STEPS_PER_EPOCH, 'generalisation_multiroom_N6')
