@@ -1,15 +1,12 @@
-import numpy as np
 import warnings
 import os
 import pickle
 import gymnasium as gym
-import tensorflow as tf
 import datetime as dt
 from dissertation_files.agents import config
-from dissertation_files.agents.agent import RandomAgent, DQNAgent, PPOAgent, RNDAgent
+from dissertation_files.agents.agent import RNDAgent
 from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper
-from dissertation_files.agents.training import random_play_loop, dqn_training_loop, ppo_training_loop, rnd_training_loop
-from dissertation_files.agents.evaluation import get_all_visitable_cells
+from dissertation_files.agents.training import rnd_training_loop
 
 
 warnings.filterwarnings("ignore")
@@ -81,4 +78,4 @@ if __name__ == "__main__":
 
     print("=============================================")
 
-    agent.save_models('C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/checkpoints/key_corridor_S3R3')
+    agent.save_models('../test_data/checkpoints/key_corridor_S3R3')

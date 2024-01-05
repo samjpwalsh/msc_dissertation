@@ -1,12 +1,11 @@
 import numpy as np
 import warnings
 import os
-import tensorflow as tf
 import pickle
 import gymnasium as gym
 import datetime as dt
 from dissertation_files.agents import config
-from dissertation_files.agents.agent import RNDAgent, PretrainedRNDAgent
+from dissertation_files.agents.agent import PretrainedRNDAgent
 from dissertation_files.environments.minigrid_environments import RGBImgPartialObsWrapper
 from dissertation_files.agents.training import rnd_training_loop
 from dissertation_files.agents.evaluation import get_all_visitable_cells
@@ -23,7 +22,7 @@ STEPS_PER_EPOCH = 4000
 EPOCHS = 200
 EVALUATION_FREQUENCY = 10
 EVALUATION_EPISODES_PER_EPOCH = 50
-EVALUATION_PIPELINE_RUNS = 2
+EVALUATION_PIPELINE_RUNS = 10
 
 if __name__ == "__main__":
 
@@ -69,7 +68,7 @@ if __name__ == "__main__":
             config.mg_rnd_gamma,
             config.mg_rnd_lam,
             config.mg_rnd_intrinsic_weight * 0.1,
-            'C:/Users/samjp/anaconda3/envs/msc-dissertation/msc_dissertation/dissertation_files/tests/test_data/checkpoints/key_corridor_S3R3',
+            '../test_data/checkpoints/key_corridor_S3R3',
             restore_rnd_networks=False
         )
 

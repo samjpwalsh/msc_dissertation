@@ -1,5 +1,4 @@
-from dissertation_files.agents.evaluation import plot_evaluation_data, plot_exploration_heatmap, \
-    plot_state_visit_percentage, load_file_for_plot
+from dissertation_files.agents.evaluation import plot_exploration_heatmap, load_file_for_plot
 from dissertation_files.environments.minigrid_environments import DoubleSpiralMaze, RGBImgPartialObsWrapper
 import double_spiral_test_pipeline
 
@@ -30,6 +29,7 @@ rnd_ftvs2 = load_file_for_plot('no_double_spiral', 'rnd', 'ftvs_2023-12-06', 'ru
 rnd_ftvs3 = load_file_for_plot('no_double_spiral', 'rnd', 'ftvs_2023-12-06', 'run_3')
 rnd_ftvs4 = load_file_for_plot('no_double_spiral', 'rnd', 'ftvs_2023-12-06', 'run_4')
 rnd_ftvs5 = load_file_for_plot('no_double_spiral', 'rnd', 'ftvs_2023-12-06', 'run_5')
+rnd_ftvs6 = load_file_for_plot('no_double_spiral', 'rnd', 'ftvs_2023-12-06', 'run_6')
 
 """
 Heatmaps

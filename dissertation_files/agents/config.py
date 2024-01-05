@@ -4,12 +4,14 @@ from keras import activations
 Minigrid Hyperparameters
 """
 
-#Conv
+# CNN
 
 mg_conv_layers = [32, 64]
 mg_kernel_size = [(8, 8), (4, 4)]
 mg_strides = [(4, 4), (2, 2)]
 mg_conv_hidden_activation = activations.relu
+
+# DQN
 
 mg_dqn_gamma = 0.95
 mg_dqn_memory_size = 10000
@@ -23,6 +25,8 @@ mg_dqn_epsilon_decay = 0.999
 mg_dqn_min_epsilon = 0.01
 mg_dqn_steps_target_model_update = 100
 
+# PPO
+
 mg_ppo_gamma = 0.99
 mg_ppo_clip_ratio = 0.2
 mg_ppo_actor_learning_rate = 3e-4
@@ -33,6 +37,8 @@ mg_ppo_lam = 0.95
 mg_ppo_hidden_sizes = (64, 64)
 mg_ppo_input_activation = activations.relu
 mg_ppo_output_activation = None
+
+# RND
 
 mg_rnd_hidden_sizes = (64, 64)
 mg_rnd_hidden_sizes_generalisation = (128, 128, 128)
